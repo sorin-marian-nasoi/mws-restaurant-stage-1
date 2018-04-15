@@ -1,5 +1,5 @@
 let restaurant;
-var map;
+var map2;
 
 /**
  * Initialize Google map, called from HTML.
@@ -9,13 +9,13 @@ window.initMap = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
+      self.map2 = new google.maps.Map(document.getElementById('map2'), {
         zoom: 16,
         center: restaurant.latlng,
         scrollwheel: false
       });
       fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map2);
     }
   });
 }
@@ -57,7 +57,9 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img'
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.alt = restaurant.name;
+  image.title = restaurant.name;
+  image.src = DBHelper.mediumImageUrlForRestaurant(restaurant);
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -117,21 +119,28 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
  */
 createReviewHTML = (review) => {
   const li = document.createElement('li');
-  const name = document.createElement('p');
+
+  const divReview = document.createElement('div');
+  divReview.className = 'container';
+
+  const name = document.createElement('div');
   name.innerHTML = review.name;
-  li.appendChild(name);
+  divReview.appendChild(name);
 
-  const date = document.createElement('p');
+  const date = document.createElement('div');
   date.innerHTML = review.date;
-  li.appendChild(date);
+  divReview.appendChild(date);
 
-  const rating = document.createElement('p');
+  const rating = document.createElement('div');
   rating.innerHTML = `Rating: ${review.rating}`;
-  li.appendChild(rating);
+  rating.className = 'rating';
+  divReview.appendChild(rating);
 
-  const comments = document.createElement('p');
+  const comments = document.createElement('div');
   comments.innerHTML = review.comments;
-  li.appendChild(comments);
+  divReview.appendChild(comments);
+
+  li.appendChild(divReview);
 
   return li;
 }
