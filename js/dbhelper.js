@@ -147,6 +147,20 @@ class DBHelper {
   }
 
   /**
+   * Restaurant small image URL.
+   */
+  static smallImageUrlForRestaurant(restaurant) {
+    return (`/images/${restaurant.photograph}`.replace(/.jpg/i, '-133x100.jpg'));
+  }
+
+  /**
+   * Restaurant medium image URL.
+   */
+  static mediumImageUrlForRestaurant(restaurant) {
+    return (`/images/${restaurant.photograph}`.replace(/.jpg/i, '-399x300.jpg'));
+  }
+
+  /**
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
