@@ -41,6 +41,9 @@ self.addEventListener('fetch', function(event) {
       event.respondWith(servePhoto(event.request));
       return;
     }
+  } else if (requestUrl.origin === "https://maps.googleapis.com") {
+    event.respondWith(serveMap(event.request));
+    return;
   }
 
   event.respondWith(
@@ -58,6 +61,21 @@ function servePhoto(request) {
       if (response) return response;
 
       return fetch(request).then(function (networkResponse) {
+        cache.put(storageUrl, networkResponse.clone());
+        return networkResponse;
+      });
+    });
+  });
+}
+
+function serveMap(request) {
+  var storageUrl = request.url;
+
+  return caches.open(staticCacheName).then(function (cache) {
+    return cache.match(storageUrl).then(function (response) {
+      if (response) return response;
+
+      return fetch(request, {mode: "headers: { 'Access-Control-Allow-Origin': 'http://localhost:8000'}"}).then(function (networkResponse) {
         cache.put(storageUrl, networkResponse.clone());
         return networkResponse;
       });
