@@ -5,30 +5,96 @@ class DBHelper {
 
   /**
    * Database URL.
-   * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = 8000 // Change this to your server port
-    return `http://localhost:${port}/data/restaurants.json`;
+    const port = 1337;
+    return `http://localhost:${port}/restaurants`;
+  }
+
+  /**
+   * Add restaurants in IndexDB
+   * @param {*} items
+   */
+  static addRestaurantsInIDB(items) {
+    return DBHelper.dbPromise.then(function(db) {
+      var tx = db.transaction('restaurants', 'readwrite');
+      var store = tx.objectStore('restaurants');
+
+      return Promise.all(items.map(function(item) {
+        if(store.get(item.id)){
+          return store.put(item);
+        } else {
+          return store.add(item);
+        }
+      })
+      ).catch(function(e) {
+        tx.abort();
+        console.log(e);
+      }).then(function() {
+        console.log('All restaurants added successfully to IndexDB');
+      });
+
+    });
+  }
+
+  /**
+   * Get all restaurants from IndexDB
+   */
+  static getRestaurantsFromIDB() {
+    return DBHelper.dbPromise.then(function(db) {
+      var tx = db.transaction('restaurants', 'readonly');
+      var store = tx.objectStore('restaurants');
+      return store.getAll();
+    });
+  }
+
+  /**
+   * Get restaurant from IndexDB by passing the name
+   * @param {*} name
+   */
+  static getRestaurantFromIDBByName(name) {
+    return DBHelper.dbPromise.then(function(db) {
+      var tx = db.transaction('restaurants', 'readonly');
+      var store = tx.objectStore('restaurants');
+      var index = store.index('name');
+      return index.get(name);
+    });
   }
 
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        const restaurants = json.restaurants;
-        callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
+    DBHelper.getRestaurantsFromIDB().then(function(restaurantsIDB) {
+      if (restaurantsIDB === undefined || restaurantsIDB.length == 0) {
+        DBHelper.fetchRestaurantsFromNetwork((error, restaurantsNetwork) => {
+          if (error) {
+            callback(error, null);
+          } else {
+            DBHelper.addRestaurantsInIDB(restaurantsNetwork);
+            callback(null, restaurantsNetwork);
+          }
+        });
+      } else {
+        callback(null, restaurantsIDB);
       }
-    };
-    xhr.send();
+    });
+  }
+
+  /**
+   * Fetch all restaurants from network.
+   */
+  static fetchRestaurantsFromNetwork(callback) {
+    fetch(DBHelper.DATABASE_URL).then(response =>
+      response.json().then(data => ({
+        data: data,
+        status: response.status
+      })
+      ).then(res => {
+        callback(null, res.data);
+      })).catch(function (error) {
+      callback(error, null);
+    });
   }
 
   /**
@@ -182,3 +248,21 @@ class DBHelper {
   }
 
 }
+
+DBHelper.dbPromise = idb.open('mws-restaurant', 3, function(upgradeDb) {
+  switch (upgradeDb.oldVersion) {
+    case 0:
+      // a placeholder case so that the switch block will
+      // execute when the database is first created
+      // (oldVersion is 0)
+    case 1:
+      console.log('Creating the restaurants object store');
+      upgradeDb.createObjectStore('restaurants', {keyPath: 'id'});
+
+    case 2:
+      console.log('Creating an index on name');
+      var store = upgradeDb.transaction.objectStore('restaurants');
+      store.createIndex('name', 'name', {unique: true});
+  }
+
+});
