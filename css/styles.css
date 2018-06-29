@@ -4,6 +4,13 @@
 img, embed, object, video {
   max-width: 100%;
 }
+img {
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+img[data-src] {
+  opacity: 0;
+}
 body,td,th,p{
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1em;
@@ -43,8 +50,8 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
 }
 #footer {
   background-color: #444;
-  color: #aaa;
-  font-size: 0.5em;
+  color: white;
+  font-size: 0.75em;
   letter-spacing: 1px;
   padding: 25px  0 25px  0;
   text-align: center;
@@ -274,7 +281,7 @@ header {
 }
 .rating {
   background-color: orange;
-  color: #fff;
+  color: black;
 }
 /* ====================== Responsive Design ====================== */
 .container, .reviews, .filter-results, .restaurantDetails, #reviews-list, #restaurants-list {

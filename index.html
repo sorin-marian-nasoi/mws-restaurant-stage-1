@@ -57,7 +57,16 @@
   <script type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/main.js"></script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvYBfd-Ha_mrnSfH66Ae0YLXxjl4Se104&libraries=places&callback=initMap"></script>
-
+  <script type="text/javascript">
+    window.addEventListener("load", function(){
+      [].slice.apply(document.querySelectorAll('img[data-src].restaurant-img')).forEach(function(img) {
+        img.setAttribute('src', img.getAttribute('data-src'));
+        img.onload = function() {
+          img.removeAttribute('data-src');
+        };
+      });
+    });
+  </script>
   <footer id="footer" role="contentinfo">
     Copyright (c) 2017 Restaurant Reviews All Rights Reserved.
   </footer>
