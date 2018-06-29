@@ -1,0 +1,1 @@
+Creative Commons Attribution 4.0 International license for images/utensils.svg taken from https://use.fontawesome.com/releases/v5.1.0/svgs/solid/utensils.svg
