@@ -18,12 +18,15 @@
   "homepage": "https://github.com/sorin-marian-nasoi/mws-restaurant-stage-1#readme",
   "devDependencies": {
     "grunt": "~0.4.5",
+    "grunt-contrib-clean": "~0.6.0",
+    "grunt-contrib-copy": "~0.8.0",
     "grunt-contrib-jshint": "~0.10.0",
     "grunt-contrib-nodeunit": "~0.4.1",
     "grunt-contrib-uglify": "~0.5.0",
-    "grunt-contrib-clean": "~0.6.0",
     "grunt-mkdir": "~0.1.2",
-    "grunt-contrib-copy": "~0.8.0"
+    "gulp": "^4.0.0",
+    "gulp-clean-css": "^3.9.4",
+    "gulp-concat": "^2.6.1"
   },
   "dependencies": {
     "grunt-responsive-images": "^0.1.6"
