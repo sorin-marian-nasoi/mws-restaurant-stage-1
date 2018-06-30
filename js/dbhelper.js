@@ -31,7 +31,7 @@ class DBHelper {
         tx.abort();
         console.log(e);
       }).then(function() {
-        console.log('All restaurants added successfully to IndexDB');
+        //console.log('All restaurants added successfully to IndexDB');
       });
 
     });

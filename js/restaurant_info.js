@@ -1,6 +1,10 @@
 let restaurant;
 var map2;
 
+document.addEventListener('DOMContentLoaded', (event) => {
+  registerServiceWorker();
+});
+
 /**
  * Initialize Google map, called from HTML.
  */
@@ -56,7 +60,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   address.innerHTML = restaurant.address;
 
   const image = document.getElementById('restaurant-img');
-  image.className = 'restaurant-img'
+  image.className = 'restaurant-img b-lazy';
   image.alt = `Image of restaurant ${restaurant.name}`;
   image.title = restaurant.name;
   image.setAttribute('data-src', DBHelper.mediumImageUrlForRestaurant(restaurant));
@@ -170,4 +174,47 @@ getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+/**
+ * Register service worker
+ */
+registerServiceWorker = () => {
+  if (!navigator.serviceWorker) {
+    console.log('The current browser doesn\'t support service workers');
+    return;
+  }
+
+  navigator.serviceWorker.register('/sw.js').then(function (registration) {
+    var serviceWorker;
+    if (registration.installing) {
+      serviceWorker = registration.installing;
+      //console.console.log("SW status: installing");
+    } else if (registration.waiting) {
+      serviceWorker = registration.waiting;
+      //console.log("SW status: waiting");
+    } else if (registration.active) {
+      serviceWorker = registration.active;
+      //console.log("SW status: active");
+    }
+    if (serviceWorker) {
+      //console.log('SW state: ', serviceWorker.state);
+      serviceWorker.addEventListener('statechange', function (e) {
+        console.log('SW state changed: ', e.target.state);
+      });
+    }
+  }).catch (function (error) {
+    // Something went wrong during registration. The sw.js file
+    // might be unavailable or contain a syntax error.
+    console.log('SW registration failed');
+  });
+
+  // Ensure refresh is only called once.
+  // This works around a bug in "force update on reload".
+  let refreshing;
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (refreshing) return;
+    window.location.reload();
+    refreshing = true;
+  });
 }

@@ -161,7 +161,7 @@ createRestaurantHTML = (restaurant) => {
   /* add the image inside a div */
   const divImage = document.createElement('div');
   const image = document.createElement('img');
-  image.className = 'restaurant-img';
+  image.className = 'restaurant-img b-lazy';
   image.setAttribute('data-src',DBHelper.smallImageUrlForRestaurant(restaurant));
   image.alt = `Image of restaurant ${restaurant.name}`;
   image.title = restaurant.name;
@@ -209,16 +209,16 @@ registerServiceWorker = () => {
     var serviceWorker;
     if (registration.installing) {
       serviceWorker = registration.installing;
-      console.log("SW status: installing");
+      //console.console.log("SW status: installing");
     } else if (registration.waiting) {
       serviceWorker = registration.waiting;
-      console.log("SW status: waiting");
+      //console.log("SW status: waiting");
     } else if (registration.active) {
       serviceWorker = registration.active;
-      console.log("SW status: active");
+      //console.log("SW status: active");
     }
     if (serviceWorker) {
-      console.log('SW state: ', serviceWorker.state);
+      //console.log('SW state: ', serviceWorker.state);
       serviceWorker.addEventListener('statechange', function (e) {
         console.log('SW state changed: ', e.target.state);
       });

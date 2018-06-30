@@ -9,14 +9,6 @@ gulp.task('one', function(done) {
 });*/
 
 
-gulp.task('copy-css', function(done) {
-  gulp
-    .src('./css/*.css')
-    .pipe(cleanCSS({compatibility: 'ie8'}))
-    .pipe(gulp.dest('./dist/css'));
-
-  done();
-});
 
 gulp.task('copy-images', function(done) {
   gulp
@@ -34,4 +26,4 @@ gulp.task('copy-html', function(done) {
   done();
 });
 
-gulp.task('default', gulp.series('copy-css', 'copy-images', 'copy-html'));
+gulp.task('default', gulp.series('copy-images', 'copy-html'));

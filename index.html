@@ -55,14 +55,17 @@
   <script type="application/javascript" charset="utf-8" src="js/idb.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/main.js"></script>
+  <script type="application/javascript" charset="utf-8" src="js/blazy.min.js"></script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvYBfd-Ha_mrnSfH66Ae0YLXxjl4Se104&libraries=places&callback=initMap"async defer></script>
   <script type="text/javascript">
     window.addEventListener("load", function(){
-      [].slice.apply(document.querySelectorAll('img[data-src].restaurant-img')).forEach(function(img) {
-        img.setAttribute('src', img.getAttribute('data-src'));
-        img.onload = function() {
-          img.removeAttribute('data-src');
-        };
+      var bLazy = new Blazy({
+        success: function(element){
+        setTimeout(function(){
+        var parent = element.parentNode;
+        parent.className = parent.className.replace(/\bloading\b/,'');
+          }, 200);
+        }
       });
     });
   </script>
