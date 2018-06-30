@@ -7,11 +7,11 @@ self.addEventListener('install', function (event) {
     return cache.addAll(
       [
         '/',
+        'js/idb.js',
         'js/dbhelper.js',
         'js/main.js',
         'js/restaurant_info.js',
-        'data/restaurants.json',
-        'css/styles.css'
+        'data/restaurants.json'
       ]);
   }));
 });
