@@ -14,7 +14,7 @@ gulp.task('clean-dist', () => {
   return gulp.src('./dist', {read: false, allowEmpty: true})
     .pipe(clean());
 });
-/*
+
 gulp.task('minify-css', () => {
   return gulp.src('./css/*.css')
     .pipe(cleanCSS({compatibility: 'ie8'}))
@@ -29,7 +29,7 @@ gulp.task('uglify-js', () => {
 
 gulp.task('copy-images', function(done) {
   gulp
-    .src('./images/*.jpg')
+    .src(['./images/*.jpg','./images/*.svg'])
     .pipe(gulp.dest('./dist/images'));
 
   done();
@@ -37,12 +37,10 @@ gulp.task('copy-images', function(done) {
 
 gulp.task('copy-html', function(done) {
   gulp
-    .src(['./*.html', './sw.js'])
+    .src(['./*.html', './sw.js','manifest.json'])
     .pipe(gulp.dest('./dist'));
 
   done();
 });
 
 gulp.task('default', gulp.series('clean-dist', 'minify-css', 'uglify-js', 'copy-images', 'copy-html'));
-*/
-gulp.task('default', gulp.series('clean-dist'));

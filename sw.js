@@ -74,7 +74,7 @@ function serveMap(request) {
     return cache.match(storageUrl).then(function (response) {
       if (response) return response;
 
-      return fetch(request, {mode: "headers: { 'Access-Control-Allow-Origin': 'http://localhost:8000'}"}).then(function (networkResponse) {
+      return fetch(request).then(function (networkResponse) {
         cache.put(storageUrl, networkResponse.clone());
         return networkResponse;
       });
