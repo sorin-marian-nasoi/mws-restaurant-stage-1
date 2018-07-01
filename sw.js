@@ -10,8 +10,7 @@ self.addEventListener('install', function (event) {
         'js/idb.js',
         'js/dbhelper.js',
         'js/main.js',
-        'js/restaurant_info.js',
-        'data/restaurants.json'
+        'js/restaurant_info.js'
       ]);
   }));
 });

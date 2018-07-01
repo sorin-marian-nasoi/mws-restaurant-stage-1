@@ -3,7 +3,7 @@ var map2;
 
 document.addEventListener('DOMContentLoaded', (event) => {
   registerServiceWorker();
-});
+})
 
 /**
  * Initialize Google map, called from HTML.
@@ -13,16 +13,23 @@ window.initMap = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      self.map2 = new google.maps.Map(document.getElementById('map2'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
       fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map2);
     }
   });
 }
+
+/**
+ * Initialize Google map when button is clicked.
+ */
+document.getElementById("loadMap2-button").addEventListener("click", function( event ) {
+  // display the current click count inside the clicked div
+  self.map2 = new google.maps.Map(document.getElementById('map2'), {
+    zoom: 16,
+    center: self.restaurant.latlng,
+    scrollwheel: false
+  });
+  DBHelper.mapMarkerForRestaurant(self.restaurant, self.map2);
+}, false)
 
 /**
  * Get current restaurant from page URL.
@@ -60,11 +67,10 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   address.innerHTML = restaurant.address;
 
   const image = document.getElementById('restaurant-img');
-  image.className = 'restaurant-img b-lazy';
+  image.className = 'restaurant-img';
   image.alt = `Image of restaurant ${restaurant.name}`;
   image.title = restaurant.name;
-  image.setAttribute('data-src', DBHelper.mediumImageUrlForRestaurant(restaurant));
-
+  image.src = DBHelper.mediumImageUrlForRestaurant(restaurant);
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
 

@@ -1,5 +1,7 @@
-let gulp = require('gulp');
-let cleanCSS = require('gulp-clean-css');
+const gulp = require('gulp');
+const clean = require('gulp-clean');
+const cleanCSS = require('gulp-clean-css');
+const uglify = require('gulp-uglify-es').default;
 
 /*
 gulp.task('one', function(done) {
@@ -8,7 +10,22 @@ gulp.task('one', function(done) {
   });
 });*/
 
+gulp.task('clean-dist', () => {
+  return gulp.src('./dist', {read: false, allowEmpty: true})
+    .pipe(clean());
+});
+/*
+gulp.task('minify-css', () => {
+  return gulp.src('./css/*.css')
+    .pipe(cleanCSS({compatibility: 'ie8'}))
+    .pipe(gulp.dest('./dist/css'));
+});
 
+gulp.task('uglify-js', () => {
+  return gulp.src('./js/*.js')
+    .pipe(uglify())
+    .pipe(gulp.dest('./dist/js/'));
+});
 
 gulp.task('copy-images', function(done) {
   gulp
@@ -20,10 +37,12 @@ gulp.task('copy-images', function(done) {
 
 gulp.task('copy-html', function(done) {
   gulp
-    .src('./*.html')
+    .src(['./*.html', './sw.js'])
     .pipe(gulp.dest('./dist'));
 
   done();
 });
 
-gulp.task('default', gulp.series('copy-images', 'copy-html'));
+gulp.task('default', gulp.series('clean-dist', 'minify-css', 'uglify-js', 'copy-images', 'copy-html'));
+*/
+gulp.task('default', gulp.series('clean-dist'));

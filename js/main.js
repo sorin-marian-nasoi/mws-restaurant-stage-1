@@ -3,6 +3,7 @@ let restaurants,
   cuisines
 var map
 var markers = []
+var lazyLoad = true
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -12,6 +13,43 @@ document.addEventListener('DOMContentLoaded', (event) => {
   fetchCuisines();
   registerServiceWorker();
 });
+
+/**
+ * Lazy load images the first time the page loads
+ */
+window.addEventListener('load', (event) => {
+  lazyLoadImages();
+});
+
+/**
+ * Lazy load images
+ */
+lazyLoadImages = () => {
+  [].forEach.call(document.querySelectorAll('img[data-src]'), function(img) {
+    img.setAttribute('src', img.getAttribute('data-src'));
+    img.onload = function() {
+      img.removeAttribute('data-src');
+    };
+  });
+  lazyLoad = false;
+};
+
+/**
+ * Initialize Google map when button is clicked.
+ */
+document.getElementById("loadMap-button").addEventListener("click", function( event ) {
+  // display the current click count inside the clicked div
+  let loc = {
+    lat: 40.722216,
+    lng: -73.987501
+  };
+  self.map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: loc,
+    scrollwheel: false
+  });
+  updateRestaurants();
+}, false);
 
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -72,15 +110,6 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  let loc = {
-    lat: 40.722216,
-    lng: -73.987501
-  };
-  self.map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 12,
-    center: loc,
-    scrollwheel: false
-  });
   updateRestaurants();
 }
 
@@ -161,8 +190,12 @@ createRestaurantHTML = (restaurant) => {
   /* add the image inside a div */
   const divImage = document.createElement('div');
   const image = document.createElement('img');
-  image.className = 'restaurant-img b-lazy';
-  image.setAttribute('data-src',DBHelper.smallImageUrlForRestaurant(restaurant));
+  image.className = 'restaurant-img';
+  if(lazyLoad){
+    image.setAttribute('data-src',DBHelper.smallImageUrlForRestaurant(restaurant));
+  } else {
+    image.src = DBHelper.smallImageUrlForRestaurant(restaurant);
+  }
   image.alt = `Image of restaurant ${restaurant.name}`;
   image.title = restaurant.name;
   divImage.append(image);
