@@ -1,7 +1,10 @@
 let restaurant;
+let form;
 var map2;
 
 document.addEventListener('DOMContentLoaded', (event) => {
+  initReviewForm();
+  initFormInputs();
   //registerServiceWorker();
 })
 
@@ -227,4 +230,46 @@ registerServiceWorker = () => {
     window.location.reload();
     refreshing = true;
   });
+}
+
+/**
+ * Initialize the review form
+ */
+initReviewForm = () => {
+  form = document.getElementById("reviewForm")
+  /* // [START preventsubmission] */
+  form.addEventListener("submit", function(evt) {
+    if (form.checkValidity() === false) {
+      evt.preventDefault();
+      alert("Form is invalid - submission prevented!");
+      return false;
+    } else {
+      // To prevent data from being sent, we've prevented submission
+      // here, but normally this code block would not exist.
+      evt.preventDefault();
+      alert("Form is valid - submission prevented to protect privacy.");
+      return false;
+    }
+  });
+  /* // [END preventsubmission] */
+}
+
+/**
+ * Initialize the form inputs
+ */
+initFormInputs = () => {
+  /* // [START initinputs] */
+  const inputs = document.getElementsByTagName("input");
+  const inputs_len = inputs.length;
+  let addDirtyClass = function(evt) {
+    evt.srcElement.classList.toggle("dirty", true);
+  };
+  for (let i = 0; i < inputs_len; i++) {
+    let input = inputs[i];
+    input.addEventListener("blur", addDirtyClass);
+    input.addEventListener("invalid", addDirtyClass);
+    input.addEventListener("valid", addDirtyClass);
+  }
+  document.getElementById("frmReview").value = "";
+  /* // [END initinputs] */
 }
