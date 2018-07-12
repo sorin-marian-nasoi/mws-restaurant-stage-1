@@ -2,7 +2,7 @@ let restaurant;
 var map2;
 
 document.addEventListener('DOMContentLoaded', (event) => {
-  registerServiceWorker();
+  //registerServiceWorker();
 })
 
 /**
@@ -70,7 +70,11 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   image.className = 'restaurant-img';
   image.alt = `Image of restaurant ${restaurant.name}`;
   image.title = restaurant.name;
-  image.src = DBHelper.mediumImageUrlForRestaurant(restaurant);
+  if(lazyLoad){
+    image.setAttribute('data-src',DBHelper.mediumImageUrlForRestaurant(restaurant));
+  } else {
+    image.src = DBHelper.mediumImageUrlForRestaurant(restaurant);
+  }
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
 

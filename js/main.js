@@ -3,7 +3,6 @@ let restaurants,
   cuisines
 var map
 var markers = []
-var lazyLoad = true
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -11,28 +10,8 @@ var lazyLoad = true
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
-  registerServiceWorker();
+  //registerServiceWorker();
 });
-
-/**
- * Lazy load images the first time the page loads
- */
-window.addEventListener('load', (event) => {
-  lazyLoadImages();
-});
-
-/**
- * Lazy load images
- */
-lazyLoadImages = () => {
-  [].forEach.call(document.querySelectorAll('img[data-src]'), function(img) {
-    img.setAttribute('src', img.getAttribute('data-src'));
-    img.onload = function() {
-      img.removeAttribute('data-src');
-    };
-  });
-  lazyLoad = false;
-};
 
 /**
  * Initialize Google map when button is clicked.

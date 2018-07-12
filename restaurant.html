@@ -44,6 +44,42 @@
         </div>
       </section>
       <section id="reviews-container">
+        <div>
+          <form method="post" id="reviewForm">
+            <legend>Enter your review</legend>
+            <div>
+              <label for="frmName">Name</label>
+              <input type="text" name="name" id="frmName"
+                      placeholder="Full name"
+                      required autocomplete="name">
+            </div>
+            <div>
+            <label for="frmDate">Date</label>
+              <input type="date" id="date-input" name="frmDate"
+                      min="2018-01-01" max="2018-12-31"
+                      placeholder="yyyy-mm-dd"
+                      required autocomplete="date"/>
+            </div>
+            <div>
+              <label for="frmScore">Score</label>
+              <input type="number" name="review-score" id="frmScore"
+                      min="1" max="5" step="1" pattern="\d*"
+                      placeholder="1"
+                      required/>
+            </div>
+            <div>
+              <label>
+                <textarea id="frmReview" maxlength="5000" style="height: 125px;"
+                          placeholder="Tip: A great review covers food, service, and ambiance."
+                          required/>
+                </textarea>
+              </label>
+            </div>
+            <div>
+              <button type="submit" value="submit">Post Review</button>
+            </div>
+          </form>
+        </div>
         <div class="reviews-details">
           <ul id="reviews-list"></ul>
         </div>
@@ -53,18 +89,9 @@
 
   <script type="application/javascript" charset="utf-8" src="js/idb.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
+  <script type="application/javascript" charset="utf-8" src="js/library.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/restaurant_info.js"></script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvYBfd-Ha_mrnSfH66Ae0YLXxjl4Se104&libraries=places&callback=initMap"async defer></script>
-  <script type="text/javascript">
-    window.addEventListener("load", function(){
-      [].forEach.call(document.querySelectorAll('img[data-src]'), function(img) {
-        img.setAttribute('src', img.getAttribute('data-src'));
-        img.onload = function() {
-          img.removeAttribute('data-src');
-        };
-      });
-    });
-  </script>
   <footer id="footer" role="contentinfo">
     Copyright (c) 2017 Restaurant Reviews All Rights Reserved.
   </footer>
