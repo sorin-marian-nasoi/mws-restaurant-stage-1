@@ -58,6 +58,12 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
   text-transform: uppercase;
   width: 100vw;
 }
+input.dirty:not(:focus):invalid {
+  background-color: #FFD9D9;
+}
+input.dirty:not(:focus):valid {
+  background-color: #D9FFD9;
+}
 /* ====================== Navigation ====================== */
 .skip-link {
   position: absolute;
