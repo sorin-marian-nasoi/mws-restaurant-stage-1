@@ -49,19 +49,6 @@ class DBHelper {
   }
 
   /**
-   * Get restaurant from IndexDB by passing the name
-   * @param {*} name
-   */
-  static getRestaurantFromIDBByName(name) {
-    return DBHelper.dbPromise.then(function(db) {
-      var tx = db.transaction('restaurants', 'readonly');
-      var store = tx.objectStore('restaurants');
-      var index = store.index('name');
-      return index.get(name);
-    });
-  }
-
-  /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {

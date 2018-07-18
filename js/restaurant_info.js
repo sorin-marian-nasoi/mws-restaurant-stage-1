@@ -236,31 +236,38 @@ registerServiceWorker = () => {
  * Send the review form data
  */
 sendReviewData = () => {
-  var XHR = new XMLHttpRequest();
+  let json = {
+    'restaurant_id': 2,
+    'name': '22',
+    'rating': 2,
+    'comments': '22'
+  };
+  const url = "http://localhost:1337/reviews/";
 
-  // Bind the FormData object and the form element
-  var FD = new FormData(form);
+  return sendData(url, json);
+}
 
-  // Define what happens on successful data submission
-  XHR.addEventListener("load", function(event) {
-    initFormInputs();
-    alert(event.target.responseText);
-  });
+/**
+ * Post data
+ */
+postData = (url = '', data = {}) => {
+  const init = {
+    method: 'POST',
+    //mode: "cors", // no-cors, cors, *same-origin
+    cache: 'reload', // *default, no-cache, reload, force-cache, only-if-cached
+    //credentials: 'same-origin', // include, same-origin, *omit
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      // "Content-Type": "application/x-www-form-urlencoded",
+    },
+    //redirect: "follow", // manual, *follow, error
+    //referrer: "no-referrer", // no-referrer, *client
+    body: JSON.stringify(data), // body data type must match "Content-Type" header
+  };
 
-  // Define what happens in case of error
-  XHR.addEventListener("error", function(event) {
-    alert('Oops! Something went wrong.');
-  });
-
-  form.action = "http://localhost:1337/reviews/";
-
-  let dataString = 'restaurant_id='+ '3' + '&name=' + FD.name + '&date=' + FD.date + '&rating=' + FD.rating + '&comments=' + FD.comments;
-
-  // Set up our request
-  XHR.open("POST", "http://localhost:1337/reviews/");
-
-  // The data sent is what the user provided in the form
-  XHR.send(dataString);
+  return fetch(url, init)
+  .then(response => response.json()) // parses response to JSON
+  .catch(error => console.error(`Fetch Error ${error}\n`));
 }
 
 /**
@@ -274,7 +281,16 @@ initReviewForm = () => {
       alert("Form is invalid - submission prevented!");
       return false;
     }
-    sendReviewData();
+    postData(
+      'http://localhost:1337/reviews/',
+      {
+        'restaurant_id': 2,
+        'name': '22',
+        'rating': 2,
+        'comments': '22'
+      })
+      .then(data => console.log(data)) // JSON from `response.json()` call
+      .catch(error => console.error(error));
   });
 }
 
