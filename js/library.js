@@ -4,7 +4,9 @@ var lazyLoad = true
  * Lazy load images the first time the page loads
  */
 window.addEventListener('load', (event) => {
-  lazyLoadImages();
+  if(lazyLoad) {
+    lazyLoadImages();
+  }
 });
 
 /**

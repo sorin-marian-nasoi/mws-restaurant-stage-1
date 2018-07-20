@@ -4,11 +4,19 @@
 class DBHelper {
 
   /**
-   * Database URL.
+   * Restaurants URL.
    */
-  static get DATABASE_URL() {
+  static get RESTAURANTS_URL() {
     const port = 1337;
     return `http://localhost:${port}/restaurants`;
+  }
+
+  /**
+   * Reviews URL.
+   */
+  static get REVIEWS_URL() {
+    const port = 1337;
+    return `http://localhost:${port}/reviews`;
   }
 
   /**
@@ -17,8 +25,8 @@ class DBHelper {
    */
   static addRestaurantsInIDB(items) {
     return DBHelper.dbPromise.then(function(db) {
-      var tx = db.transaction('restaurants', 'readwrite');
-      var store = tx.objectStore('restaurants');
+      const tx = db.transaction('restaurants', 'readwrite');
+      const store = tx.objectStore('restaurants');
 
       return Promise.all(items.map(function(item) {
         if(store.get(item.id)){
@@ -38,23 +46,75 @@ class DBHelper {
   }
 
   /**
+   * Add reviews in IndexDB
+   * @param {*} items
+   */
+  static addReviewsInIDB(items) {
+    return DBHelper.dbPromise.then(function(db) {
+      const tx = db.transaction('reviews', 'readwrite');
+      const store = tx.objectStore('reviews');
+
+      return Promise.all(items.map(function(item) {
+        if(store.get(item.id)){
+          return store.put(item);
+        } else {
+          return store.add(item);
+        }
+      })
+      ).catch(function(e) {
+        tx.abort();
+        console.log(e);
+      }).then(function() {
+        //console.log('All reviews added successfully to IndexDB');
+      });
+
+    });
+  }
+
+  /**
    * Get all restaurants from IndexDB
    */
   static getRestaurantsFromIDB() {
     return DBHelper.dbPromise.then(function(db) {
-      var tx = db.transaction('restaurants', 'readonly');
-      var store = tx.objectStore('restaurants');
+      const tx = db.transaction('restaurants', 'readonly');
+      const store = tx.objectStore('restaurants');
       return store.getAll();
     });
   }
 
   /**
-   * Fetch all restaurants.
+   * Get all reviews from IndexDB.
+   */
+  static getReviewsFromIDB() {
+    return DBHelper.dbPromise.then(function(db) {
+      const tx = db.transaction('reviews', 'readonly');
+      const store = tx.objectStore('reviews');
+      return store.getAll();
+    });
+  }
+
+  /**
+   * Get all reviews from IndexDB given a certain restaurant_id.
+   */
+  static getReviewsFromIDBById(restaurant_id) {
+    const range = IDBKeyRange.only(Number(restaurant_id));
+
+    return DBHelper.dbPromise.then(function(db) {
+      const tx = db.transaction('reviews', 'readonly');
+      const store = tx.objectStore('reviews');
+      const index = store.index('restaurant_id');
+      return index.getAll(range);
+    });
+
+  }
+
+  /**
+   * Fetch all restaurants either from IndexDB or from network.
    */
   static fetchRestaurants(callback) {
     DBHelper.getRestaurantsFromIDB().then(function(restaurantsIDB) {
       if (restaurantsIDB === undefined || restaurantsIDB.length == 0) {
-        DBHelper.fetchRestaurantsFromNetwork((error, restaurantsNetwork) => {
+        DBHelper.fetchFromNetwork(DBHelper.RESTAURANTS_URL, (error, restaurantsNetwork) => {
           if (error) {
             callback(error, null);
           } else {
@@ -69,10 +129,12 @@ class DBHelper {
   }
 
   /**
-   * Fetch all restaurants from network.
+   * Fetch all data from network
+   * @param {*} url depending on the value, either all the restaurants or the reviews will be retrieved
+   * @param {*} callback
    */
-  static fetchRestaurantsFromNetwork(callback) {
-    fetch(DBHelper.DATABASE_URL).then(response =>
+  static fetchFromNetwork(url='', callback) {
+    fetch(url).then(response =>
       response.json().then(data => ({
         data: data,
         status: response.status
@@ -85,20 +147,52 @@ class DBHelper {
   }
 
   /**
+   * Fetch all reviews either from IndexDB or from network.
+   */
+  static fetchReviews(callback) {
+    DBHelper.getReviewsFromIDB().then(function(reviewsIDB) {
+      if (reviewsIDB === undefined || reviewsIDB.length == 0) {
+        DBHelper.fetchFromNetwork(DBHelper.REVIEWS_URL, (error, reviewsNetwork) => {
+          if (error) {
+            callback(error, null);
+          } else {
+            DBHelper.addReviewsInIDB(reviewsNetwork);
+            callback(null, reviewsNetwork);
+          }
+        });
+      } else {
+        callback(null, reviewsIDB);
+      }
+    });
+  }
+
+  /**
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
         const restaurant = restaurants.find(r => r.id == id);
-        if (restaurant) { // Got the restaurant
+        if (restaurant) {
           callback(null, restaurant);
-        } else { // Restaurant does not exist in the database
-          callback('Restaurant does not exist', null);
+        } else {
+          callback(`Restaurant with id ${id} does not exist`, null);
         }
+      }
+    });
+  }
+
+  /**
+   * Fetch all reviews of a restaurant from IndexDB given it's restaurant_id.
+   */
+  static fetchReviewsByRestaurantId(restaurantId, callback) {
+    DBHelper.getReviewsFromIDBById(restaurantId).then(function(reviewsIDB) {
+      if (reviewsIDB) {
+        callback(null, reviewsIDB);
+      } else {
+        callback(`There are no reviews for restaurant_id ${restaurantId}`, null);
       }
     });
   }
@@ -144,7 +238,7 @@ class DBHelper {
       if (error) {
         callback(error, null);
       } else {
-        let results = restaurants
+        let results = restaurants;
         if (cuisine != 'all') { // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
@@ -246,10 +340,16 @@ DBHelper.dbPromise = idb.open('mws-restaurant', 3, function(upgradeDb) {
       console.log('Creating the restaurants object store');
       upgradeDb.createObjectStore('restaurants', {keyPath: 'id'});
 
+      console.log('Creating the reviews object store');
+      upgradeDb.createObjectStore('reviews', {keyPath: 'id'});
     case 2:
-      console.log('Creating an index on name');
-      var store = upgradeDb.transaction.objectStore('restaurants');
-      store.createIndex('name', 'name', {unique: true});
+      console.log('Creating an index on name for Restaurants');
+      const restaurantStore = upgradeDb.transaction.objectStore('restaurants');
+      restaurantStore.createIndex('name', 'name', {unique: true});
+
+      console.log('Creating an index on reastaurant_id for Reviews')
+      const reviewsStore = upgradeDb.transaction.objectStore('reviews');
+      reviewsStore.createIndex('restaurant_id', 'restaurant_id');
   }
 
 });

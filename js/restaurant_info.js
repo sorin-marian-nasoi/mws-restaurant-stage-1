@@ -1,10 +1,13 @@
-let restaurant;
-let form;
+let restaurant,
+  reviews,
+  form
 var map2;
 
 document.addEventListener('DOMContentLoaded', (event) => {
   initReviewForm();
   initFormInputs();
+  getReviewsFromIDB();
+
   //registerServiceWorker();
 })
 
@@ -35,6 +38,16 @@ document.getElementById("loadMap2-button").addEventListener("click", function( e
 }, false)
 
 /**
+ * Get the restaurant reviews from IndexDB.
+ */
+getReviewsFromIDB = () => {
+  const id = getParameterByName('id');
+  DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
+    self.reviews = reviews;
+  });
+}
+
+/**
  * Get current restaurant from page URL.
  */
 fetchRestaurantFromURL = (callback) => {
@@ -47,12 +60,14 @@ fetchRestaurantFromURL = (callback) => {
     error = 'No restaurant id in URL'
     callback(error, null);
   } else {
+    //get the restaurant
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
         return;
       }
+
       fillRestaurantHTML();
       callback(null, restaurant)
     });
@@ -60,7 +75,7 @@ fetchRestaurantFromURL = (callback) => {
 }
 
 /**
- * Create restaurant HTML and add it to the webpage
+ * Create restaurant HTML and add it to the webpage.
  */
 fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
@@ -112,7 +127,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+fillReviewsHTML = (reviews = self.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -145,7 +160,8 @@ createReviewHTML = (review) => {
   divReview.appendChild(name);
 
   const date = document.createElement('div');
-  date.innerHTML = review.date;
+  const updatedAt = new Date(review.updatedAt).toISOString().split('T')[0];
+  date.innerHTML = updatedAt;
   divReview.appendChild(date);
 
   const rating = document.createElement('div');
@@ -163,7 +179,7 @@ createReviewHTML = (review) => {
 }
 
 /**
- * Add restaurant name to the breadcrumb navigation menu
+ * Add restaurant name to the breadcrumb navigation menu.
  */
 fillBreadcrumb = (restaurant=self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
@@ -190,7 +206,7 @@ getParameterByName = (name, url) => {
 }
 
 /**
- * Register service worker
+ * Register service worker.
  */
 registerServiceWorker = () => {
   if (!navigator.serviceWorker) {
@@ -233,81 +249,75 @@ registerServiceWorker = () => {
 }
 
 /**
- * Send the review form data
- */
-sendReviewData = () => {
-  let json = {
-    'restaurant_id': 2,
-    'name': '22',
-    'rating': 2,
-    'comments': '22'
-  };
-  const url = "http://localhost:1337/reviews/";
-
-  return sendData(url, json);
-}
-
-/**
- * Post data
+ * Post data.
  */
 postData = (url = '', data = {}) => {
   const init = {
     method: 'POST',
-    //mode: "cors", // no-cors, cors, *same-origin
-    cache: 'reload', // *default, no-cache, reload, force-cache, only-if-cached
-    //credentials: 'same-origin', // include, same-origin, *omit
     headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      // "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/json; charset=utf-8'
     },
-    //redirect: "follow", // manual, *follow, error
-    //referrer: "no-referrer", // no-referrer, *client
-    body: JSON.stringify(data), // body data type must match "Content-Type" header
+    body: JSON.stringify(data),
   };
 
   return fetch(url, init)
-  .then(response => response.json()) // parses response to JSON
-  .catch(error => console.error(`Fetch Error ${error}\n`));
+    .then(response => response.json()) // parses response to JSON
+    .catch(error => console.error(`Fetch Error ${error}\n`));
 }
 
 /**
- * Initialize the review form
+ * Initialize the review form.
  */
 initReviewForm = () => {
-  form = document.getElementById("reviewForm")
-  form.addEventListener("submit", function(evt) {
-    if (form.checkValidity() === false) {
-      evt.preventDefault();
-      alert("Form is invalid - submission prevented!");
-      return false;
-    }
-    postData(
-      'http://localhost:1337/reviews/',
-      {
-        'restaurant_id': 2,
-        'name': '22',
-        'rating': 2,
-        'comments': '22'
+  form = document.getElementById('reviewForm')
+  form.addEventListener('submit', function(evt) {
+    evt.preventDefault();
+
+    const url = 'http://localhost:1337/reviews/';
+    const review = {
+      'restaurant_id': getParameterByName('id'),
+      'name': document.getElementById('frmName').value,
+      'rating': Number(document.getElementById('frmScore').value),
+      'comments': document.getElementById('frmComments').value.trim()
+    };
+
+    postData(url, review)
+      .then(function(data) {
+        clearFormInputs();
       })
-      .then(data => console.log(data)) // JSON from `response.json()` call
       .catch(error => console.error(error));
+
+    return false;
   });
 }
 
 /**
- * Initialize the form inputs
+ * Initialize the form inputs.
  */
 initFormInputs = () => {
-  const inputs = document.getElementsByTagName("input");
+  const inputs = document.getElementsByTagName('input');
   const inputs_len = inputs.length;
   let addDirtyClass = function(evt) {
-    evt.srcElement.classList.toggle("dirty", true);
+    evt.srcElement.classList.toggle('dirty', true);
   };
   for (let i = 0; i < inputs_len; i++) {
     let input = inputs[i];
-    input.addEventListener("blur", addDirtyClass);
-    input.addEventListener("invalid", addDirtyClass);
-    input.addEventListener("valid", addDirtyClass);
+    input.addEventListener('blur', addDirtyClass);
+    input.addEventListener('invalid', addDirtyClass);
+    input.addEventListener('valid', addDirtyClass);
   }
-  document.getElementById("frmComments").value = "";
+  document.getElementById('frmComments').value = '';
+}
+
+/**
+ * Clear the values of the form inputs.
+ */
+clearFormInputs = () => {
+  const inputs = document.getElementsByTagName('input');
+  const inputs_len = inputs.length;
+  for (let i = 0; i < inputs_len; i++) {
+    let input = inputs[i];
+    input.value = '';
+  }
+  document.getElementById('frmComments').value = '';
 }

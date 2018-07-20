@@ -10,7 +10,12 @@ var markers = []
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
-  registerServiceWorker();
+  DBHelper.fetchReviews((error, reviews) => {
+    if (error) { // Got an error
+      console.error(error);
+    }
+  });
+  //registerServiceWorker();
 });
 
 /**
