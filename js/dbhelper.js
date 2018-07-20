@@ -46,6 +46,22 @@ class DBHelper {
   }
 
   /**
+   * Add review to the IndexDB reviews objectstore.
+   * @param {*} item Single review object
+   */
+  static addReviewInIDB(item) {
+    return DBHelper.dbPromise.then(function(db) {
+      const tx = db.transaction('reviews', 'readwrite');
+      tx.objectStore('reviews').count().then(function(count) {
+        //update the review ID as reviews.count + 1
+        item.id = Number(count + 1);
+        tx.objectStore('reviews').put(item);
+        return tx.complete;
+      });
+    });
+  }
+
+  /**
    * Add reviews in IndexDB
    * @param {*} items
    */
@@ -337,17 +353,12 @@ DBHelper.dbPromise = idb.open('mws-restaurant', 3, function(upgradeDb) {
       // execute when the database is first created
       // (oldVersion is 0)
     case 1:
-      console.log('Creating the restaurants object store');
       upgradeDb.createObjectStore('restaurants', {keyPath: 'id'});
-
-      console.log('Creating the reviews object store');
       upgradeDb.createObjectStore('reviews', {keyPath: 'id'});
     case 2:
-      console.log('Creating an index on name for Restaurants');
       const restaurantStore = upgradeDb.transaction.objectStore('restaurants');
       restaurantStore.createIndex('name', 'name', {unique: true});
 
-      console.log('Creating an index on reastaurant_id for Reviews')
       const reviewsStore = upgradeDb.transaction.objectStore('reviews');
       reviewsStore.createIndex('restaurant_id', 'restaurant_id');
   }

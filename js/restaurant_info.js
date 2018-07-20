@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   initFormInputs();
   getReviewsFromIDB();
 
-  //registerServiceWorker();
+  registerServiceWorker();
 })
 
 /**
@@ -274,18 +274,35 @@ initReviewForm = () => {
     evt.preventDefault();
 
     const url = 'http://localhost:1337/reviews/';
-    const review = {
-      'restaurant_id': getParameterByName('id'),
+    const reviewDB = {
+      'restaurant_id': Number(getParameterByName('id')),
       'name': document.getElementById('frmName').value,
       'rating': Number(document.getElementById('frmScore').value),
       'comments': document.getElementById('frmComments').value.trim()
     };
 
-    postData(url, review)
+    const dateNow = Date.now();
+    const reviewIDB = {
+      "id": 0,
+      "restaurant_id": reviewDB.restaurant_id,
+      "name": reviewDB.name,
+      "createdAt": dateNow,
+      "updatedAt": dateNow,
+      "rating": reviewDB.rating,
+      "comments": reviewDB.comments
+    };
+    //post data to IndexDB objectstore
+    DBHelper.addReviewInIDB(reviewIDB);
+
+    //post data to server
+    postData(url, reviewDB)
       .then(function(data) {
         clearFormInputs();
       })
       .catch(error => console.error(error));
+
+    //refresh the page to show new reviews
+    window.location.reload();
 
     return false;
   });

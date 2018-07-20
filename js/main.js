@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
       console.error(error);
     }
   });
-  //registerServiceWorker();
+  registerServiceWorker();
 });
 
 /**
