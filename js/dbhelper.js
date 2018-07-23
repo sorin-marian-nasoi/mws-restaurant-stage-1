@@ -20,7 +20,7 @@ class DBHelper {
   }
 
   /**
-   * Add restaurants in IndexDB
+   * Add restaurants in IndexDB.
    * @param {*} items
    */
   static addRestaurantsInIDB(items) {
@@ -62,7 +62,7 @@ class DBHelper {
   }
 
   /**
-   * Add reviews in IndexDB
+   * Add reviews in IndexDB.
    * @param {*} items
    */
   static addReviewsInIDB(items) {
@@ -88,7 +88,7 @@ class DBHelper {
   }
 
   /**
-   * Get all restaurants from IndexDB
+   * Get all restaurants from IndexDB.
    */
   static getRestaurantsFromIDB() {
     return DBHelper.dbPromise.then(function(db) {
@@ -145,7 +145,7 @@ class DBHelper {
   }
 
   /**
-   * Fetch all data from network
+   * Fetch all data from network.
    * @param {*} url depending on the value, either all the restaurants or the reviews will be retrieved
    * @param {*} callback
    */
@@ -348,19 +348,19 @@ class DBHelper {
 
 DBHelper.dbPromise = idb.open('mws-restaurant', 3, function(upgradeDb) {
   switch (upgradeDb.oldVersion) {
-    case 0:
-      // a placeholder case so that the switch block will
-      // execute when the database is first created
-      // (oldVersion is 0)
-    case 1:
-      upgradeDb.createObjectStore('restaurants', {keyPath: 'id'});
-      upgradeDb.createObjectStore('reviews', {keyPath: 'id'});
-    case 2:
-      const restaurantStore = upgradeDb.transaction.objectStore('restaurants');
-      restaurantStore.createIndex('name', 'name', {unique: true});
+  case 0:
+    // a placeholder case so that the switch block will
+    // execute when the database is first created
+    // (oldVersion is 0)
+  case 1:
+    upgradeDb.createObjectStore('restaurants', {keyPath: 'id'});
+    upgradeDb.createObjectStore('reviews', {keyPath: 'id'});
+  case 2:
+    const restaurantStore = upgradeDb.transaction.objectStore('restaurants');
+    restaurantStore.createIndex('name', 'name', {unique: true});
 
-      const reviewsStore = upgradeDb.transaction.objectStore('reviews');
-      reviewsStore.createIndex('restaurant_id', 'restaurant_id');
+    const reviewsStore = upgradeDb.transaction.objectStore('reviews');
+    reviewsStore.createIndex('restaurant_id', 'restaurant_id');
   }
 
 });

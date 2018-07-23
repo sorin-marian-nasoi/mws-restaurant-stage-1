@@ -52,6 +52,42 @@ self.addEventListener('fetch', function(event) {
   );
 });
 
+
+self.addEventListener('sync', function(event) {
+  //add hardcoded review
+  const dateNow = Date.now();
+  const reviewDB = {
+    "restaurant_id": Number(2),
+    "name": '2',
+    "rating": Number(2),
+    "comments": '22'
+  };
+
+  const url = 'http://localhost:1337/reviews/';
+
+  console.log(reviewDB);
+
+  if (event.tag == 'reviewDBSync') {
+    event.waitUntil(postData(url, reviewDB));
+  }
+});
+
+/**
+ * Post review in database only when there is connectivity.
+ */
+function postData (url = '', data = {}) {
+  const init = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8'
+    },
+    body: JSON.stringify(data),
+  };
+  return fetch(url, init)
+    .then(response => response.json()) // parses response to JSON
+    .catch(error => console.error(`Fetch Error ${error}\n`));
+}
+
 function servePhoto(request) {
   var storageUrl = request.url;
 

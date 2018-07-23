@@ -246,23 +246,11 @@ registerServiceWorker = () => {
     window.location.reload();
     refreshing = true;
   });
-}
 
-/**
- * Post data.
- */
-postData = (url = '', data = {}) => {
-  const init = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8'
-    },
-    body: JSON.stringify(data),
-  };
-
-  return fetch(url, init)
-    .then(response => response.json()) // parses response to JSON
-    .catch(error => console.error(`Fetch Error ${error}\n`));
+  // Request a one-off sync for background sync of reviews in DB.
+  navigator.serviceWorker.ready.then(function(swRegistration) {
+    return swRegistration.sync.register('reviewDBSync');
+  });
 }
 
 /**
@@ -270,36 +258,26 @@ postData = (url = '', data = {}) => {
  */
 initReviewForm = () => {
   form = document.getElementById('reviewForm')
+
   form.addEventListener('submit', function(evt) {
     evt.preventDefault();
-
-    const url = 'http://localhost:1337/reviews/';
-    const reviewDB = {
-      'restaurant_id': Number(getParameterByName('id')),
-      'name': document.getElementById('frmName').value,
-      'rating': Number(document.getElementById('frmScore').value),
-      'comments': document.getElementById('frmComments').value.trim()
-    };
 
     const dateNow = Date.now();
     const reviewIDB = {
       "id": 0,
-      "restaurant_id": reviewDB.restaurant_id,
-      "name": reviewDB.name,
+      "restaurant_id": Number(self.restaurant.id),
+      "name": document.getElementById('frmName').value,
       "createdAt": dateNow,
       "updatedAt": dateNow,
-      "rating": reviewDB.rating,
-      "comments": reviewDB.comments
+      "rating": Number(document.getElementById('frmScore').value),
+      "comments": document.getElementById('frmComments').value.trim()
     };
+
     //post data to IndexDB objectstore
     DBHelper.addReviewInIDB(reviewIDB);
 
-    //post data to server
-    postData(url, reviewDB)
-      .then(function(data) {
-        clearFormInputs();
-      })
-      .catch(error => console.error(error));
+    //clear POST form inputs
+    clearFormInputs();
 
     //refresh the page to show new reviews
     window.location.reload();
