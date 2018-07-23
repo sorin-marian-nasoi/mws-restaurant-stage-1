@@ -248,9 +248,17 @@ registerServiceWorker = () => {
   });
 
   // Request a one-off sync for background sync of reviews in DB.
-  navigator.serviceWorker.ready.then(function(swRegistration) {
-    return swRegistration.sync.register('reviewDBSync');
-  });
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready.then(function(swRegistration) {
+      return swRegistration.sync.register('reviewDBSync');
+    }).catch(function() {
+      console.log('system was unable to register for a sync, this could be an OS-level restriction');
+      postData();
+    });
+  } else {
+    console.log('serviceworker/sync not supported');
+    postData();
+  }
 }
 
 /**
@@ -284,6 +292,30 @@ initReviewForm = () => {
 
     return false;
   });
+}
+
+/**
+ * Post review in database only when there is connectivity or there is no background sync support in browser.
+ */
+postData = () => {
+  const url = 'http://localhost:1337/reviews/';
+  const data = {
+    "restaurant_id": Number(self.restaurant.id),
+    "name": document.getElementById('frmName').value,
+    "rating": Number(document.getElementById('frmScore').value),
+    "comments": document.getElementById('frmComments').value.trim()
+  };
+  const init = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8'
+    },
+    body: JSON.stringify(data),
+  };
+
+  return fetch(url, init)
+    .then(response => response.json()) // parses response to JSON
+    .catch(error => console.error(`Fetch Error ${error}\n`));
 }
 
 /**
