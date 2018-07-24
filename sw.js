@@ -1,3 +1,6 @@
+importScripts('js/idb.js');
+importScripts('js/dbhelper.js');
+
 var staticCacheName = 'mws-v1';
 var contentImgsCache = 'mws-images';
 var allCaches = [staticCacheName, contentImgsCache];
@@ -54,21 +57,16 @@ self.addEventListener('fetch', function(event) {
 
 
 self.addEventListener('sync', function(event) {
-  //add hardcoded review
-  const dateNow = Date.now();
-  const reviewDB = {
-    "restaurant_id": Number(2),
-    "name": '2',
-    "rating": Number(2),
-    "comments": '22'
-  };
-
-  const url = 'http://localhost:1337/reviews/';
-
-  console.log(reviewDB);
+  // get reviews from IDB
+  //update the DB for every IDB review
 
   if (event.tag == 'reviewDBSync') {
-    event.waitUntil(postData(url, reviewDB));
+    event.waitUntil(DBHelper.fetchReviews((error, reviews) => {
+      if (error) { // Got an error
+        console.error(error);
+      }
+      console.log('reviews', reviews);
+    }));
   }
 });
 
