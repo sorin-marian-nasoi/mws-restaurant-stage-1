@@ -215,6 +215,23 @@ nav h1 a {
   text-decoration: none;
   text-transform: uppercase;
 }
+.favourite_button {
+  align-self: flex-start;
+  margin-left: 3px;
+  font-size: 20px;
+  background: white;
+  border: 1.3px solid grey;
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  cursor: pointer;
+}
+.fav_yes {
+  color: orange;
+}
+.fav_no {
+  color: gray;
+}
 /* ====================== Restaurant Details ====================== */
 header {
   width: 100vw;

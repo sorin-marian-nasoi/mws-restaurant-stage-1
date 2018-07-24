@@ -10,11 +10,6 @@ var markers = []
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
-  DBHelper.fetchReviews((error, reviews) => {
-    if (error) { // Got an error
-      console.error(error);
-    }
-  });
   registerServiceWorker();
 });
 
@@ -147,12 +142,29 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 }
 
 /**
+ * Set the classes of the favourite button and aria-label based on the passed fav.
+ */
+setButtonFavourite = (el, isFavourite) => {
+  if(isFavourite) {
+    el.classList.remove('fav_no');
+    el.classList.add('fav_yes');
+    el.title = 'remove as favourite';
+    el.setAttribute('aria-label', 'remove as favourite');
+  } else {
+    el.classList.remove('fav_yes');
+    el.classList.add('fav_no');
+    el.title = 'mark as favourite';
+    el.setAttribute('aria-label', 'mark as favourite');
+  }
+}
+
+/**
  * Create restaurant HTML.
  */
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
-  /* add everithing inside a inside a div with id restaurantDetails */
+  /* add everything inside a inside a div with id restaurantDetails */
   const divRestaurantDetails = document.createElement('div');
   divRestaurantDetails.className = "restaurantDetails";
 
@@ -170,6 +182,19 @@ createRestaurantHTML = (restaurant) => {
   address.innerHTML = restaurant.address;
   divName.append(address);
   divRestaurantDetails.append(divName);
+
+  /* add a favourite button */
+  const favouriteBtn = document.createElement('button');
+  favouriteBtn.innerHTML = '&#x2764;';
+  favouriteBtn.className = 'favourite_button';
+  favouriteBtn.onclick = function() {
+    const isFavourite = !restaurant.is_favorite;
+    DBHelper.updateFavoriteStatus(restaurant.id, isFavourite);
+    restaurant.is_favorite = isFavourite;
+    setButtonFavourite(favouriteBtn, restaurant.is_favorite);
+  };
+  setButtonFavourite(favouriteBtn, restaurant.is_favorite);
+  divRestaurantDetails.append(favouriteBtn);
 
   /* add the image inside a div */
   const divImage = document.createElement('div');

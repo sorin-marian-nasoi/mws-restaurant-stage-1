@@ -4,19 +4,11 @@
 class DBHelper {
 
   /**
-   * Restaurants URL.
+   * Database URL.
    */
-  static get RESTAURANTS_URL() {
+  static get DATABASE_URL() {
     const port = 1337;
-    return `http://localhost:${port}/restaurants`;
-  }
-
-  /**
-   * Reviews URL.
-   */
-  static get REVIEWS_URL() {
-    const port = 1337;
-    return `http://localhost:${port}/reviews`;
+    return `http://localhost:${port}/`;
   }
 
   /**
@@ -46,6 +38,36 @@ class DBHelper {
   }
 
   /**
+   * Update the is_favorite attribute in both the database and IndexDB.
+   * @param {*} restaurantId restaurant ID
+   * @param {*} isFavorite boolean indicating if restaurant is favorite
+   */
+  static updateFavoriteStatus(restaurantId, isFavorite) {
+    fetch(`${DBHelper.DATABASE_URL}restaurants/${restaurantId}/?is_favorite=${isFavorite}`,
+      {method: 'PUT'})
+      .then(() => {
+        console.log('then');
+        DBHelper.updateFavoriteStatusInIDB(restaurantId, isFavorite);
+      });
+  }
+
+  /**
+   * Update the is_favorite attribute in IndexDB.
+   * @param {*} restaurantId restaurant ID
+   * @param {*} isFavorite boolean indicating if restaurant is favorite
+   */
+  static updateFavoriteStatusInIDB(restaurantId, isFavorite) {
+    DBHelper.dbPromise.then(function(db) {
+      const tx = db.transaction('restaurants', 'readwrite');
+      const store = tx.objectStore('restaurants');
+      store.get(restaurantId).then(restaurant => {
+        restaurant.is_favorite = isFavorite;
+        store.put(restaurant);
+      });
+    });
+  }
+
+  /**
    * Add review to the IndexDB reviews objectstore.
    * @param {*} item Single review object
    */
@@ -63,7 +85,7 @@ class DBHelper {
 
   /**
    * Add reviews in IndexDB.
-   * @param {*} items
+   * @param {*} items multiple items
    */
   static addReviewsInIDB(items) {
     return DBHelper.dbPromise.then(function(db) {
@@ -99,18 +121,8 @@ class DBHelper {
   }
 
   /**
-   * Get all reviews from IndexDB.
-   */
-  static getReviewsFromIDB() {
-    return DBHelper.dbPromise.then(function(db) {
-      const tx = db.transaction('reviews', 'readonly');
-      const store = tx.objectStore('reviews');
-      return store.getAll();
-    });
-  }
-
-  /**
    * Get all reviews from IndexDB given a certain restaurant_id.
+   * @param {*} restaurantId restaurant ID
    */
   static getReviewsFromIDBById(restaurant_id) {
     const range = IDBKeyRange.only(Number(restaurant_id));
@@ -121,7 +133,6 @@ class DBHelper {
       const index = store.index('restaurant_id');
       return index.getAll(range);
     });
-
   }
 
   /**
@@ -130,7 +141,7 @@ class DBHelper {
   static fetchRestaurants(callback) {
     DBHelper.getRestaurantsFromIDB().then(function(restaurantsIDB) {
       if (restaurantsIDB === undefined || restaurantsIDB.length == 0) {
-        DBHelper.fetchFromNetwork(DBHelper.RESTAURANTS_URL, (error, restaurantsNetwork) => {
+        DBHelper.fetchFromNetwork(DBHelper.DATABASE_URL + 'restaurants', (error, restaurantsNetwork) => {
           if (error) {
             callback(error, null);
           } else {
@@ -163,27 +174,8 @@ class DBHelper {
   }
 
   /**
-   * Fetch all reviews either from IndexDB or from network.
-   */
-  static fetchReviews(callback) {
-    DBHelper.getReviewsFromIDB().then(function(reviewsIDB) {
-      if (reviewsIDB === undefined || reviewsIDB.length == 0) {
-        DBHelper.fetchFromNetwork(DBHelper.REVIEWS_URL, (error, reviewsNetwork) => {
-          if (error) {
-            callback(error, null);
-          } else {
-            DBHelper.addReviewsInIDB(reviewsNetwork);
-            callback(null, reviewsNetwork);
-          }
-        });
-      } else {
-        callback(null, reviewsIDB);
-      }
-    });
-  }
-
-  /**
    * Fetch a restaurant by its ID.
+   * @param {*} id restaurant ID
    */
   static fetchRestaurantById(id, callback) {
     DBHelper.fetchRestaurants((error, restaurants) => {
@@ -201,7 +193,8 @@ class DBHelper {
   }
 
   /**
-   * Fetch all reviews of a restaurant from IndexDB given it's restaurant_id.
+   * Fetch all reviews of a restaurant given it's restaurant_id.
+   * @param {*} restaurantId restaurant ID
    */
   static fetchReviewsByRestaurantId(restaurantId, callback) {
     DBHelper.getReviewsFromIDBById(restaurantId).then(function(reviewsIDB) {
@@ -211,10 +204,25 @@ class DBHelper {
         callback(`There are no reviews for restaurant_id ${restaurantId}`, null);
       }
     });
+    DBHelper.getReviewsFromIDBById(restaurantId).then(function(reviewsIDB) {
+      if (reviewsIDB === undefined || reviewsIDB.length == 0) {
+        DBHelper.fetchFromNetwork(`${DBHelper.DATABASE_URL}reviews/?restaurant_id=${restaurantId}`, (error, reviewsNetwork) => {
+          if (error) {
+            callback(error, null);
+          } else {
+            DBHelper.addReviewsInIDB(reviewsNetwork);
+            callback(null, reviewsNetwork);
+          }
+        });
+      } else {
+        callback(null, reviewsIDB);
+      }
+    });
   }
 
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
+   * @param {*} cuisine cuisine
    */
   static fetchRestaurantByCuisine(cuisine, callback) {
     // Fetch all restaurants  with proper error handling
@@ -231,6 +239,7 @@ class DBHelper {
 
   /**
    * Fetch restaurants by a neighborhood with proper error handling.
+   * @param {*} neighborhood neighborhood
    */
   static fetchRestaurantByNeighborhood(neighborhood, callback) {
     // Fetch all restaurants
@@ -247,6 +256,8 @@ class DBHelper {
 
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
+   * @param {*} cuisine cuisine
+   * @param {*} neighborhood neighborhood
    */
   static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
     // Fetch all restaurants

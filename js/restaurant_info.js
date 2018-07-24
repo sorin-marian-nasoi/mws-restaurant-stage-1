@@ -38,12 +38,16 @@ document.getElementById("loadMap2-button").addEventListener("click", function( e
 }, false)
 
 /**
- * Get the restaurant reviews from IndexDB.
+ * Get the restaurant reviews either from DB or IDB.
  */
 getReviewsFromIDB = () => {
   const id = getParameterByName('id');
   DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
-    self.reviews = reviews;
+    if (error) { // Got an error!
+      console.error(error);
+    } else {
+      self.reviews = reviews;
+    }
   });
 }
 
