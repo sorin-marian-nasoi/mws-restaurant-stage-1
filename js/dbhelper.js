@@ -77,10 +77,77 @@ class DBHelper {
       tx.objectStore('reviews').count().then(function(count) {
         //update the review ID as reviews.count + 1
         item.id = Number(count + 1);
-        tx.objectStore('reviews').put(item);
+        tx.objectStore('reviews').add(item);
         return tx.complete;
       });
     });
+  }
+
+  /**
+   * Updates a review in IndexDB.
+   * @param {*} item the review
+   */
+  static updateReviewInIDB(item) {
+    return DBHelper.dbPromise.then(function(db) {
+      const tx = db.transaction('reviews', 'readwrite');
+      const store = tx.objectStore('reviews');
+      return store.put(item);
+    });
+  }
+
+  /**
+   * Add review
+   * @param {*} reviewIDB review for IndexDB {id,restaurant_id,name,createdAt,updatedAt,rating,comments,saved}
+   */
+  static addReview(reviewIDB){
+    //if we are offline
+    if(!navigator.onLine) {
+      DBHelper.sendDataWhenOnline();
+      console.log('OFFLINE !!!');
+      return;
+    }
+    console.log('ONLINE !!!');
+    let reviewForDB = {
+      "name": reviewIDB.name,
+      "rating": reviewIDB.rating,
+      "comments": reviewIDB.comments
+    };
+
+    postData(`${DBHelper.DATABASE_URL}reviews`, reviewForDB);
+  }
+
+  /**
+   * Send the reviews to the backend and updates the reviews in IndexDB.
+   */
+  static sendDataWhenOnline() {
+    window.addEventListener('online', (event) => {
+      console.log('soso addEventListener online');
+      DBHelper.getReviewsFromIDBById((error, reviewsIDB) => {
+        if (error) { // Got an error!
+          console.error(error);
+        } else {
+          reviewsIDB.map(function(item) {
+            console.log('soso item', item);
+          });
+        }
+      });
+    });
+  }
+
+  /**
+   * Post data in the backend database.
+   */
+  static postData (url = '', data = {}) {
+    const init = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: JSON.stringify(data),
+    };
+    return fetch(url, init)
+      .then(response => response.json()) // parses response to JSON
+      .catch(error => console.error(`Fetch Error ${error}\n`));
   }
 
   /**
@@ -122,17 +189,24 @@ class DBHelper {
 
   /**
    * Get all reviews from IndexDB given a certain restaurant_id.
-   * @param {*} restaurantId restaurant ID
+   * @param {*} restaurantId restaurant ID or 0 to retrieve all reviews
    */
-  static getReviewsFromIDBById(restaurant_id) {
-    const range = IDBKeyRange.only(Number(restaurant_id));
-
-    return DBHelper.dbPromise.then(function(db) {
-      const tx = db.transaction('reviews', 'readonly');
-      const store = tx.objectStore('reviews');
-      const index = store.index('restaurant_id');
-      return index.getAll(range);
-    });
+  static getReviewsFromIDBById(restaurant_id = 0) {
+    if(restaurant_id === 0) {
+      return DBHelper.dbPromise.then(function(db) {
+        const tx = db.transaction('reviews', 'readonly');
+        const store = tx.objectStore('reviews');
+        return store.getAll();
+      });
+    } else {
+      return DBHelper.dbPromise.then(function(db) {
+        const range = IDBKeyRange.only(Number(restaurant_id));
+        const tx = db.transaction('reviews', 'readonly');
+        const store = tx.objectStore('reviews');
+        const index = store.index('restaurant_id');
+        return index.getAll(range);
+      });
+    }
   }
 
   /**
@@ -197,13 +271,6 @@ class DBHelper {
    * @param {*} restaurantId restaurant ID
    */
   static fetchReviewsByRestaurantId(restaurantId, callback) {
-    DBHelper.getReviewsFromIDBById(restaurantId).then(function(reviewsIDB) {
-      if (reviewsIDB) {
-        callback(null, reviewsIDB);
-      } else {
-        callback(`There are no reviews for restaurant_id ${restaurantId}`, null);
-      }
-    });
     DBHelper.getReviewsFromIDBById(restaurantId).then(function(reviewsIDB) {
       if (reviewsIDB === undefined || reviewsIDB.length == 0) {
         DBHelper.fetchFromNetwork(`${DBHelper.DATABASE_URL}reviews/?restaurant_id=${restaurantId}`, (error, reviewsNetwork) => {

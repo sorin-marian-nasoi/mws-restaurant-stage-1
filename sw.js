@@ -1,6 +1,3 @@
-importScripts('js/idb.js');
-importScripts('js/dbhelper.js');
-
 var staticCacheName = 'mws-v1';
 var contentImgsCache = 'mws-images';
 var allCaches = [staticCacheName, contentImgsCache];
@@ -54,37 +51,6 @@ self.addEventListener('fetch', function(event) {
     })
   );
 });
-
-
-self.addEventListener('sync', function(event) {
-  // get reviews from IDB
-  //update the DB for every IDB review
-
-  if (event.tag == 'reviewDBSync') {
-    event.waitUntil(DBHelper.fetchReviews((error, reviews) => {
-      if (error) { // Got an error
-        console.error(error);
-      }
-      console.log('reviews', reviews);
-    }));
-  }
-});
-
-/**
- * Post review in database only when there is connectivity.
- */
-function postData (url = '', data = {}) {
-  const init = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8'
-    },
-    body: JSON.stringify(data),
-  };
-  return fetch(url, init)
-    .then(response => response.json()) // parses response to JSON
-    .catch(error => console.error(`Fetch Error ${error}\n`));
-}
 
 function servePhoto(request) {
   var storageUrl = request.url;

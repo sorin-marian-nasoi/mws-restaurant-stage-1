@@ -6,9 +6,8 @@ var map2;
 document.addEventListener('DOMContentLoaded', (event) => {
   initReviewForm();
   initFormInputs();
-  getReviewsFromIDB();
 
-  registerServiceWorker();
+  //registerServiceWorker();
 })
 
 /**
@@ -38,20 +37,6 @@ document.getElementById("loadMap2-button").addEventListener("click", function( e
 }, false)
 
 /**
- * Get the restaurant reviews either from DB or IDB.
- */
-getReviewsFromIDB = () => {
-  const id = getParameterByName('id');
-  DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.reviews = reviews;
-    }
-  });
-}
-
-/**
  * Get current restaurant from page URL.
  */
 fetchRestaurantFromURL = (callback) => {
@@ -72,8 +57,17 @@ fetchRestaurantFromURL = (callback) => {
         return;
       }
 
-      fillRestaurantHTML();
-      callback(null, restaurant)
+      DBHelper.fetchReviewsByRestaurantId(restaurant.id, (error, reviews) => {
+        if (error) { // Got an error!
+          console.error(error);
+        } else {
+          self.reviews = reviews;
+
+          fillRestaurantHTML();
+
+          callback(null, restaurant)
+        }
+      });
     });
   }
 }
@@ -250,19 +244,6 @@ registerServiceWorker = () => {
     window.location.reload();
     refreshing = true;
   });
-
-  // Request a one-off sync for background sync of reviews in DB.
-  if ('serviceWorker' in navigator && 'SyncManager' in window) {
-    navigator.serviceWorker.ready.then(function(swRegistration) {
-      return swRegistration.sync.register('reviewDBSync');
-    }).catch(function() {
-      console.log('system was unable to register for a sync, this could be an OS-level restriction');
-      postData();
-    });
-  } else {
-    console.log('serviceworker/sync not supported');
-    postData();
-  }
 }
 
 /**
@@ -282,10 +263,15 @@ initReviewForm = () => {
       "createdAt": dateNow,
       "updatedAt": dateNow,
       "rating": Number(document.getElementById('frmScore').value),
-      "comments": document.getElementById('frmComments').value.trim()
+      "comments": document.getElementById('frmComments').value.trim(),
+      "saved": false
     };
 
-    //post data to IndexDB objectstore
+    //add review to backend
+    DBHelper.addReview(reviewIDB);
+
+
+
     DBHelper.addReviewInIDB(reviewIDB);
 
     //clear POST form inputs

@@ -48,20 +48,20 @@
           <form id="reviewForm" action="#">
             <legend>Enter your review</legend>
             <div>
-              <label for="frmName">Name</label>
+              <label for="frmName">Name</label><br/>
               <input type="text" name="name" id="frmName"
                       placeholder="Full name"
                       required autocomplete="name">
             </div>
             <div>
-              <label for="frmScore">Score</label>
+              <label for="frmScore">Score</label><br/>
               <input type="number" name="rating" id="frmScore"
                       min="1" max="5" step="1" pattern="\d*"
                       placeholder="1"
                       required/>
             </div>
             <div>
-              <label>Review</label>
+              <label for="frmComments">Review</label><br/>
               <textarea name="comments" id="frmComments"
                         maxlength="5000" style="height: 125px;"
                         placeholder="Tip: A great review covers food, service, and ambiance."
