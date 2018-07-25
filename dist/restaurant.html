@@ -8,7 +8,7 @@
 
   <!-- Normalize.css for better cross-browser consistency -->
   <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preload" as="style" href="css/styles.css" onload="this.rel='stylesheet'">
 
   <link rel="manifest" href="/manifest.json">
   <link href="data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" rel="icon" type="image/x-icon" />
@@ -44,52 +44,43 @@
         </div>
       </section>
       <section id="reviews-container">
-        <div>
-          <form id="reviewForm">
-            <legend>Enter your review</legend>
-            <div>
-              <label for="frmName">Name</label>
-              <input type="text" name="name" id="frmName"
-                      placeholder="Full name"
-                      required autocomplete="name">
-            </div>
-            <div>
-            <label for="frmDate">Date</label>
-              <input type="date" name="date" id="frmDate"
-                      min="2018-01-01" max="2018-12-31"
-                      placeholder="yyyy-mm-dd"
-                      required autocomplete="date"/>
-            </div>
-            <div>
-              <label for="frmScore">Score</label>
-              <input type="number" name="rating" id="frmScore"
-                      min="1" max="5" step="1" pattern="\d*"
-                      placeholder="1"
-                      required/>
-            </div>
-            <div>
-              <label>Review</label>
-              <textarea name="comments" id="frmComments"
-                        maxlength="5000" style="height: 125px;"
-                        placeholder="Tip: A great review covers food, service, and ambiance."
+        <ul id="reviews-list">
+          <li>
+            <form id="reviewForm">
+              <legend>Enter your review</legend>
+              <div>
+                <label for="frmName">Name</label><br/>
+                <input type="text" name="name" id="frmName"
+                        placeholder="Full name"
+                        required autocomplete="name">
+              </div>
+              <div>
+                <label for="frmScore">Score</label><br/>
+                <input type="number" name="rating" id="frmScore"
+                        min="1" max="5" step="1" pattern="\d*"
+                        placeholder="1"
                         required/>
-              </textarea>
-            </div>
-            <div>
-              <button type="submit" value="submit">Post Review</button>
-            </div>
-          </form>
-        </div>
-        <div class="reviews-details">
-          <ul id="reviews-list"></ul>
-        </div>
+              </div>
+              <div>
+                <label for="frmComments">Review</label><br/>
+                <textarea name="comments" id="frmComments"
+                          maxlength="5000" style="height: 125px;"
+                          placeholder="Tip: A great review covers food, service, and ambiance."
+                          required/>
+                </textarea>
+              </div>
+              <div>
+                <button onclick="addReview()">Post Review</button>
+              </div>
+            </form>
+          </li>
+        </ul>
       </section>
     </div>
   </main>
 
   <script type="application/javascript" charset="utf-8" src="js/idb.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
-  <script type="application/javascript" charset="utf-8" src="js/library.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/restaurant_info.js"></script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvYBfd-Ha_mrnSfH66Ae0YLXxjl4Se104&libraries=places&callback=initMap"async defer></script>
   <footer id="footer" role="contentinfo">
