@@ -164,26 +164,50 @@ setButtonFavourite = (el, isFavourite) => {
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
-  /* add everything inside a inside a div with id restaurantDetails */
-  const divRestaurantDetails = document.createElement('div');
-  divRestaurantDetails.className = "restaurantDetails";
-
-  /* add the restaurant info inside a div */
-  const divName = document.createElement('div');
   const name = document.createElement('h1');
   name.innerHTML = restaurant.name;
-  divName.append(name);
+  li.append(name);
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
-  divName.append(neighborhood);
+  li.append(neighborhood);
 
   const address = document.createElement('p');
   address.innerHTML = restaurant.address;
-  divName.append(address);
-  divRestaurantDetails.append(divName);
+  li.append(address);
+
+  const pImage = document.createElement('p');
+  const spanImage = document.createElement('span');
+  const image = document.createElement('img');
+  image.alt = `Image of restaurant ${restaurant.name}`;
+  image.title = restaurant.name;
+  const config = {
+    threshold: 0.1
+  };
+  let observer;
+  if('IntersectionObserver' in window) {
+    observer = new IntersectionObserver(onChange, config);
+    observer.observe(image);
+  } else {
+    loadImage(image);
+  }
+  const loadImage = image => {
+    image.className = 'restaurant-img';
+    image.src = DBHelper.smallImageUrlForRestaurant(restaurant);
+  }
+  function onChange(changes, observer) {
+    changes.forEach(change => {
+      if(change.intersectionRatio > 0) {
+        loadImage(change.target);
+        observer.unobserve(change.target);
+      }
+    });
+  }
+  spanImage.append(image);
+  pImage.append(spanImage);
 
   /* add a favourite button */
+  const spanFav = document.createElement('span');
   const favouriteBtn = document.createElement('button');
   favouriteBtn.innerHTML = '&#x2764;';
   favouriteBtn.className = 'favourite_button';
@@ -194,32 +218,15 @@ createRestaurantHTML = (restaurant) => {
     setButtonFavourite(favouriteBtn, restaurant.is_favorite);
   };
   setButtonFavourite(favouriteBtn, restaurant.is_favorite);
-  divRestaurantDetails.append(favouriteBtn);
+  spanFav.append(favouriteBtn);
+  pImage.append(spanFav);
+  li.append(pImage);
 
-  /* add the image inside a div */
-  const divImage = document.createElement('div');
-  const image = document.createElement('img');
-  image.className = 'restaurant-img';
-  if(lazyLoad){
-    image.setAttribute('data-src',DBHelper.smallImageUrlForRestaurant(restaurant));
-  } else {
-    image.src = DBHelper.smallImageUrlForRestaurant(restaurant);
-  }
-  image.alt = `Image of restaurant ${restaurant.name}`;
-  image.title = restaurant.name;
-  divImage.append(image);
-  divRestaurantDetails.append(divImage);
-
-  /* add the details link inside a div */
-  const divDetails = document.createElement('div');
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
   more.href = DBHelper.urlForRestaurant(restaurant);
   more.alt = restaurant.name;
-  divDetails.append(more);
-  divRestaurantDetails.append(divDetails);
-
-  li.append(divRestaurantDetails);
+  li.append(more);
 
   return li
 }

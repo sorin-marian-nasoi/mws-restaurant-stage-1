@@ -84,10 +84,26 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   image.className = 'restaurant-img';
   image.alt = `Image of restaurant ${restaurant.name}`;
   image.title = restaurant.name;
-  if(lazyLoad){
-    image.setAttribute('data-src',DBHelper.mediumImageUrlForRestaurant(restaurant));
+  const config = {
+    threshold: 0.1
+  };
+  let observer;
+  if('IntersectionObserver' in window) {
+    observer = new IntersectionObserver(onChange, config);
+    observer.observe(image);
   } else {
+    loadImage(image);
+  }
+  const loadImage = image => {
     image.src = DBHelper.mediumImageUrlForRestaurant(restaurant);
+  }
+  function onChange(changes, observer) {
+    changes.forEach(change => {
+      if(change.intersectionRatio > 0) {
+        loadImage(change.target);
+        observer.unobserve(change.target);
+      }
+    });
   }
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
