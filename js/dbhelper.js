@@ -68,22 +68,6 @@ class DBHelper {
   }
 
   /**
-   * Add review to the IndexDB reviews objectstore.
-   * @param {*} item Single review object
-   */
-  static addReviewInIDB(item) {
-    return DBHelper.dbPromise.then(function(db) {
-      const tx = db.transaction('reviews', 'readwrite');
-      tx.objectStore('reviews').count().then(function(count) {
-        //update the review ID as reviews.count + 1
-        item.id = Number(count + 1);
-        tx.objectStore('reviews').add(item);
-        return tx.complete;
-      });
-    });
-  }
-
-  /**
    * Updates a review in IndexDB.
    * @param {*} item the review
    */
@@ -97,40 +81,65 @@ class DBHelper {
 
   /**
    * Add review
-   * @param {*} reviewIDB review for IndexDB {id,restaurant_id,name,createdAt,updatedAt,rating,comments,saved}
+   * @param {*} review review {restaurant_id,name,updatedAt,rating,comments}
    */
-  static addReview(reviewIDB){
+  static addReview(review){
     //if we are offline
     if(!navigator.onLine) {
-      DBHelper.sendDataWhenOnline();
-      console.log('OFFLINE !!!');
+      DBHelper.sendDataWhenOnline(review);
       return;
     }
-    console.log('ONLINE !!!');
     let reviewForDB = {
-      "name": reviewIDB.name,
-      "rating": reviewIDB.rating,
-      "comments": reviewIDB.comments
+      "restaurant_id": review.restaurant_id,
+      "name": review.name,
+      "rating": review.rating,
+      "comments": review.comments
     };
-
-    postData(`${DBHelper.DATABASE_URL}reviews`, reviewForDB);
+    DBHelper.postData(`${DBHelper.DATABASE_URL}reviews`, reviewForDB);
   }
 
   /**
-   * Send the reviews to the backend and updates the reviews in IndexDB.
+   * Create a HASH for the given string
+   * @param {*} str The input string
    */
-  static sendDataWhenOnline() {
+  static hash(str) {
+    let hash = 0, i, chr;
+    if (str.length === 0) return hash;
+    for (i = 0; i < str.length; i++) {
+      chr   = str.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  }
+
+  /**
+   * Send the reviews in local storage to the backend.
+   * @param {*} review review {restaurant_id,name,updatedAt,rating,comments}
+   */
+  static sendDataWhenOnline(review) {
+    //store object in localstorage
+    const strData = JSON.stringify(review);
+    const strHash = DBHelper.hash(strData);
+    localStorage.setItem(strHash, strData);
+
     window.addEventListener('online', (event) => {
-      console.log('soso addEventListener online');
-      DBHelper.getReviewsFromIDBById((error, reviewsIDB) => {
-        if (error) { // Got an error!
-          console.error(error);
-        } else {
-          reviewsIDB.map(function(item) {
-            console.log('soso item', item);
-          });
+      //get all offline reviews in localstorage and add them to the backend DB
+      let key, data, keyData, dataHash;
+      for(var i =0; i < localStorage.length; i++){
+        key = localStorage.key(i);
+        keyData = localStorage.getItem(key);
+        dataHash = DBHelper.hash(keyData);
+
+        if(key == dataHash) {//only the reviews from our DB will be considered
+          data = JSON.parse(keyData);
+          if(data){
+            DBHelper.addReview(data);
+
+            localStorage.removeItem(key);
+          }
         }
-      });
+      }
     });
   }
 

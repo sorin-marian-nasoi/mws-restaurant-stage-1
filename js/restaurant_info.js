@@ -4,10 +4,8 @@ let restaurant,
 var map2;
 
 document.addEventListener('DOMContentLoaded', (event) => {
-  initReviewForm();
   initFormInputs();
-
-  //registerServiceWorker();
+  registerServiceWorker();
 })
 
 /**
@@ -144,34 +142,38 @@ fillReviewsHTML = (reviews = self.reviews) => {
   container.appendChild(ul);
 }
 
+addReviewHTML = (review) => {
+  const ul = document.getElementById('reviews-list');
+  ul.appendChild(createReviewHTML(review));
+}
+
 /**
  * Create review HTML and add it to the webpage.
  */
 createReviewHTML = (review) => {
   const li = document.createElement('li');
 
-  const divReview = document.createElement('div');
-  divReview.className = 'container';
+  const pReview = document.createElement('p');
 
-  const name = document.createElement('div');
-  name.innerHTML = review.name;
-  divReview.appendChild(name);
+  const spanName = document.createElement('span');
+  spanName.innerHTML = `Name: ${review.name}`;
+  pReview.appendChild(spanName);
 
-  const date = document.createElement('div');
+  const spanDate = document.createElement('span');
   const updatedAt = new Date(review.updatedAt).toISOString().split('T')[0];
-  date.innerHTML = updatedAt;
-  divReview.appendChild(date);
+  spanDate.innerHTML = `Date: ${updatedAt}`;
+  pReview.appendChild(spanDate);
 
-  const rating = document.createElement('div');
-  rating.innerHTML = `Rating: ${review.rating}`;
-  rating.className = 'rating';
-  divReview.appendChild(rating);
+  const spanRating = document.createElement('span');
+  spanRating.innerHTML = `Rating: ${review.rating}`;
+  spanRating.className = 'rating';
 
-  const comments = document.createElement('div');
-  comments.innerHTML = review.comments;
-  divReview.appendChild(comments);
+  pReview.appendChild(spanRating);
+  li.appendChild(pReview);
 
-  li.appendChild(divReview);
+  const pComments = document.createElement('p');
+  pComments.innerHTML = review.comments;
+  li.appendChild(pComments);
 
   return li;
 }
@@ -247,65 +249,26 @@ registerServiceWorker = () => {
 }
 
 /**
- * Initialize the review form.
+ * Add a new review.
  */
-initReviewForm = () => {
-  form = document.getElementById('reviewForm')
+addReview = () => {
+  event.preventDefault();
 
-  form.addEventListener('submit', function(evt) {
-    evt.preventDefault();
-
-    const dateNow = Date.now();
-    const reviewIDB = {
-      "id": 0,
-      "restaurant_id": Number(self.restaurant.id),
-      "name": document.getElementById('frmName').value,
-      "createdAt": dateNow,
-      "updatedAt": dateNow,
-      "rating": Number(document.getElementById('frmScore').value),
-      "comments": document.getElementById('frmComments').value.trim(),
-      "saved": false
-    };
-
-    //add review to backend
-    DBHelper.addReview(reviewIDB);
-
-
-
-    DBHelper.addReviewInIDB(reviewIDB);
-
-    //clear POST form inputs
-    clearFormInputs();
-
-    //refresh the page to show new reviews
-    window.location.reload();
-
-    return false;
-  });
-}
-
-/**
- * Post review in database only when there is connectivity or there is no background sync support in browser.
- */
-postData = () => {
-  const url = 'http://localhost:1337/reviews/';
-  const data = {
+  const review = {
     "restaurant_id": Number(self.restaurant.id),
     "name": document.getElementById('frmName').value,
+    "updatedAt": new Date().getTime(),
     "rating": Number(document.getElementById('frmScore').value),
     "comments": document.getElementById('frmComments').value.trim()
   };
-  const init = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8'
-    },
-    body: JSON.stringify(data),
-  };
 
-  return fetch(url, init)
-    .then(response => response.json()) // parses response to JSON
-    .catch(error => console.error(`Fetch Error ${error}\n`));
+  //add review to backend
+  DBHelper.addReview(review);
+  addReviewHTML(review);
+
+  //clear POST form inputs
+  document.getElementById('reviewForm').reset();
+  clearFormInputs();
 }
 
 /**
