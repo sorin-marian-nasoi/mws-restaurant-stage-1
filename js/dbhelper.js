@@ -203,7 +203,7 @@ class DBHelper {
         const range = IDBKeyRange.only(Number(restaurant_id));
         const tx = db.transaction('reviews', 'readonly');
         const store = tx.objectStore('reviews');
-        const index = store.index('restaurant_id');
+        const index = store.index('updatedAt');
         return index.getAll(range);
       });
     }
@@ -438,7 +438,7 @@ DBHelper.dbPromise = idb.open('mws-restaurant', 3, function(upgradeDb) {
     restaurantStore.createIndex('name', 'name', {unique: true});
 
     const reviewsStore = upgradeDb.transaction.objectStore('reviews');
-    reviewsStore.createIndex('restaurant_id', 'restaurant_id');
+    reviewsStore.createIndex('updatedAt', 'updatedAt');
   }
 
 });
