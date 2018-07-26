@@ -46,23 +46,23 @@
       <section id="reviews-container">
         <ul id="reviews-list">
           <li>
-            <form id="reviewForm">
+            <form id="reviewForm" action="#">
               <legend>Enter your review</legend>
               <div>
-                <label for="frmName">Name</label><br/>
+                <label for="frmName">Name (required):</label><br/>
                 <input type="text" name="name" id="frmName"
                         placeholder="Full name"
                         required autocomplete="name">
               </div>
               <div>
-                <label for="frmScore">Score</label><br/>
+                <label for="frmScore">Score (required):</label><br/>
                 <input type="number" name="rating" id="frmScore"
                         min="1" max="5" step="1" pattern="\d*"
                         placeholder="1"
                         required/>
               </div>
               <div>
-                <label for="frmComments">Review</label><br/>
+                <label for="frmComments">Review (required):</label><br/>
                 <textarea name="comments" id="frmComments"
                           maxlength="5000" style="height: 125px;"
                           placeholder="Tip: A great review covers food, service, and ambiance."
@@ -70,7 +70,7 @@
                 </textarea>
               </div>
               <div>
-                <button onclick="addReview()">Post Review</button>
+                <button type="submit" value="submit" aria-label="Post a new review" title="Post a new review">Post Review</button>
               </div>
             </form>
           </li>
