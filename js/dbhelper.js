@@ -75,18 +75,6 @@ class DBHelper {
   }
 
   /**
-   * Updates a review in IndexDB.
-   * @param {*} item the review
-   */
-  static updateReviewInIDB(item) {
-    return DBHelper.dbPromise.then(function(db) {
-      const tx = db.transaction('reviews', 'readwrite');
-      const store = tx.objectStore('reviews');
-      return store.put(item);
-    });
-  }
-
-  /**
    * Add review
    * @param {*} review review {restaurant_id,name,updatedAt,rating,comments}
    */
