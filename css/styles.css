@@ -309,12 +309,17 @@ header {
   background-color: orange;
   color: black;
 }
+textarea {
+  width:400px;
+  resize: vertical;
+}
 /* ====================== Responsive Design ====================== */
 .container, .reviews, .filter-results, .restaurantDetails, #reviews-list, #restaurants-list {
   display: -webkit-flex;
   display: flex;
   -webkit-flex-flow: row wrap;
   flex-flow: row wrap;
+	justify-content: center;
 }
 .restaurantDetails {
   max-width: 270px;
