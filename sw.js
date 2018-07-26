@@ -10,7 +10,10 @@ self.addEventListener('install', function (event) {
         'js/idb.js',
         'js/dbhelper.js',
         'js/main.js',
-        'js/restaurant_info.js'
+        'js/restaurant_info.js',
+        'css/styles.css',
+        'manifest.json',
+        'restaurant.html'
       ]);
   }));
 });
@@ -46,7 +49,7 @@ self.addEventListener('fetch', function(event) {
   }
 
   event.respondWith(
-    caches.match(event.request).then(function(response) {
+    caches.match(event.request, {'ignoreSearch': true}).then(function(response) {
       return response || fetch(event.request);
     })
   );
