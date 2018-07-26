@@ -4,8 +4,26 @@ let restaurant,
 var map2;
 
 document.addEventListener('DOMContentLoaded', (event) => {
+  initReviewForm();
   initFormInputs();
   registerServiceWorker();
+})
+
+/**
+ * Set element validity based on the passed blbValid boolean.
+ */
+setElementValidity = (element, blnValid) => {
+  element.classList.toggle('dirty', blnValid);
+  element.setAttribute('aria-invalid', blnValid);
+}
+
+document.addEventListener('invalid', (event) => {
+  setElementValidity(event.srcElement, true);
+}, true)
+
+document.addEventListener('change', (event) => {
+  let el = event.target;
+  setElementValidity(el, !el.checkValidity());
 })
 
 /**
@@ -267,24 +285,30 @@ registerServiceWorker = () => {
 /**
  * Add a new review.
  */
-addReview = () => {
-  event.preventDefault();
+initReviewForm = () => {
+  form = document.getElementById('reviewForm');
 
-  const review = {
-    "restaurant_id": Number(self.restaurant.id),
-    "name": document.getElementById('frmName').value,
-    "updatedAt": new Date().getTime(),
-    "rating": Number(document.getElementById('frmScore').value),
-    "comments": document.getElementById('frmComments').value.trim()
-  };
+  form.addEventListener('submit', function(evt) {
+    evt.preventDefault();
 
-  //add review to backend
-  DBHelper.addReview(review);
-  addReviewHTML(review);
+    const review = {
+      "restaurant_id": Number(self.restaurant.id),
+      "name": document.getElementById('frmName').value,
+      "updatedAt": new Date().getTime(),
+      "rating": Number(document.getElementById('frmScore').value),
+      "comments": document.getElementById('frmComments').value.trim()
+    };
 
-  //clear POST form inputs
-  document.getElementById('reviewForm').reset();
-  clearFormInputs();
+    //add review to backend
+    DBHelper.addReview(review);
+    addReviewHTML(review);
+
+    //clear POST form inputs
+    document.getElementById('reviewForm').reset();
+    clearFormInputs();
+
+    return false;
+  });
 }
 
 /**
@@ -301,8 +325,14 @@ initFormInputs = () => {
     input.addEventListener('blur', addDirtyClass);
     input.addEventListener('invalid', addDirtyClass);
     input.addEventListener('valid', addDirtyClass);
+    input.setAttribute("aria-invalid", "false");
   }
-  document.getElementById('frmComments').value = '';
+  let frmComments = document.getElementById('frmComments');
+  frmComments.value = '';
+  frmComments.addEventListener('blur', addDirtyClass);
+  frmComments.addEventListener('invalid', addDirtyClass);
+  frmComments.addEventListener('valid', addDirtyClass);
+  frmComments.setAttribute("aria-invalid", "false");
 }
 
 /**
@@ -314,6 +344,9 @@ clearFormInputs = () => {
   for (let i = 0; i < inputs_len; i++) {
     let input = inputs[i];
     input.value = '';
+    setElementValidity(input, false);
   }
-  document.getElementById('frmComments').value = '';
+  let frmComments = document.getElementById('frmComments');
+  frmComments.value = '';
+  setElementValidity(frmComments, false);
 }
