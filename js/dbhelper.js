@@ -43,11 +43,16 @@ class DBHelper {
    * @param {*} isFavorite boolean indicating if restaurant is favorite
    */
   static updateFavoriteStatus(restaurantId, isFavorite) {
+    //if we are offline
+    if(!navigator.onLine) {
+      DBHelper.sendFavoriteWhenOnline(restaurantId, isFavorite);
+      return;
+    }
+
     fetch(`${DBHelper.DATABASE_URL}restaurants/${restaurantId}/?is_favorite=${isFavorite}`,
       {method: 'PUT'})
       .then(() => {
-        console.log('then');
-        DBHelper.updateFavoriteStatusInIDB(restaurantId, isFavorite);
+        DBHelper.updateFavoriteStatusInIDB(restaurantId, isFavorite, true);
       });
   }
 
@@ -55,13 +60,15 @@ class DBHelper {
    * Update the is_favorite attribute in IndexDB.
    * @param {*} restaurantId restaurant ID
    * @param {*} isFavorite boolean indicating if restaurant is favorite
+   * @param {*} favoriteSynched boolean indicating if IDB info is in sync with DB info
    */
-  static updateFavoriteStatusInIDB(restaurantId, isFavorite) {
+  static updateFavoriteStatusInIDB(restaurantId, isFavorite, favoriteSynched) {
     DBHelper.dbPromise.then(function(db) {
       const tx = db.transaction('restaurants', 'readwrite');
       const store = tx.objectStore('restaurants');
       store.get(restaurantId).then(restaurant => {
         restaurant.is_favorite = isFavorite;
+        restaurant.favoriteSynched = favoriteSynched;
         store.put(restaurant);
       });
     });
@@ -86,7 +93,7 @@ class DBHelper {
   static addReview(review){
     //if we are offline
     if(!navigator.onLine) {
-      DBHelper.sendDataWhenOnline(review);
+      DBHelper.sendReviewsWhenOnline(review);
       return;
     }
     let reviewForDB = {
@@ -114,10 +121,29 @@ class DBHelper {
   }
 
   /**
+   * Syncs the is_favorite from INdexDB with the backend.
+   * @param {*} restaurantId the restaurant ID
+   * @param {*} isFavorite the restaurant is_favorite state
+   */
+  static sendFavoriteWhenOnline(restaurantId, isFavorite) {
+    //store favorite in IndexDB but mark the favoriteSynched as false
+    DBHelper.updateFavoriteStatusInIDB(restaurantId, isFavorite, false);
+
+    window.addEventListener('online', (event) => {
+      //get all restaurants that have favoriteSynched set to false
+      DBHelper.getRestaurantsFromIDB().then(function(restaurantsIDB) {
+        const restaurant = restaurantsIDB.find(r => r.id == restaurantId);
+
+        DBHelper.updateFavoriteStatus(restaurant.id, restaurant.is_favorite)
+      });
+    });
+  }
+
+  /**
    * Send the reviews in local storage to the backend.
    * @param {*} review review {restaurant_id,name,updatedAt,rating,comments}
    */
-  static sendDataWhenOnline(review) {
+  static sendReviewsWhenOnline(review) {
     //store object in localstorage
     const strData = JSON.stringify(review);
     const strHash = DBHelper.hash(strData);
@@ -228,6 +254,10 @@ class DBHelper {
           if (error) {
             callback(error, null);
           } else {
+            //correct the is_favorite property value in the backend
+            for (let restaurant of restaurantsNetwork) {
+              restaurant.is_favorite = (restaurant.is_favorite === "true" || restaurant.is_favorite === true)?true:false;
+            }
             DBHelper.addRestaurantsInIDB(restaurantsNetwork);
             callback(null, restaurantsNetwork);
           }
