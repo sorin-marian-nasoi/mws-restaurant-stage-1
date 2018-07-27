@@ -74,12 +74,14 @@ input.dirty:not(:focus):valid {
 .skip-link:focus {
   top: 0;
 }
-nav h1 {
+nav {
   width: 100vw;
   height: 80px;
   max-height: 12vh;
   background-color: #252831;
   text-align:center;
+}
+nav h1 {
   margin: auto;
 }
 
@@ -295,7 +297,8 @@ header {
   padding: 0.7rem;
   box-shadow: 0px 0px 5px #555;
   margin-bottom: 15px;
-	max-width: 400px;
+  max-width: 320px;
+  min-width: 320px;
 }
 #reviews-list li span{
   margin-right:1em;
@@ -309,7 +312,7 @@ header {
   color: black;
 }
 textarea {
-  width:400px;
+  width: 300px;
   resize: vertical;
 }
 /* ====================== Responsive Design ====================== */
@@ -329,7 +332,7 @@ textarea {
     height: 400px;
   }
   #map {
-    width: calc(100vw - 230px);
+    width: calc(100vw - 220px);
     height: 400px;
   }
   #map2 {
