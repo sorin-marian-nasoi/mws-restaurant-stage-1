@@ -90,7 +90,11 @@ class DBHelper {
       "rating": review.rating,
       "comments": review.comments
     };
-    DBHelper.postData(`${DBHelper.DATABASE_URL}reviews`, reviewForDB);
+    //post data to backend DB
+    let reviewForIDB = DBHelper.postData(`${DBHelper.DATABASE_URL}reviews`, reviewForDB);
+
+    //also update IndexDB
+    DBHelper.addReviewsInIDB(reviewForIDB);
   }
 
   /**
@@ -122,6 +126,7 @@ class DBHelper {
       DBHelper.getRestaurantsFromIDB().then(function(restaurantsIDB) {
         const restaurant = restaurantsIDB.find(r => r.id == restaurantId);
 
+        //update Favorite status both in backend db and IndexDB
         DBHelper.updateFavoriteStatus(restaurant.id, restaurant.is_favorite)
       });
     });
@@ -298,20 +303,26 @@ class DBHelper {
    * @param {*} restaurantId restaurant ID
    */
   static fetchReviewsByRestaurantId(restaurantId, callback) {
-    DBHelper.getReviewsFromIDBById(restaurantId).then(function(reviewsIDB) {
-      if (reviewsIDB === undefined || reviewsIDB.length == 0) {
-        DBHelper.fetchFromNetwork(`${DBHelper.DATABASE_URL}reviews/?restaurant_id=${restaurantId}`, (error, reviewsNetwork) => {
-          if (error) {
-            callback(error, null);
-          } else {
-            DBHelper.addReviewsInIDB(reviewsNetwork);
-            callback(null, reviewsNetwork);
-          }
-        });
-      } else {
+    if(!navigator.onLine) {
+      DBHelper.getReviewsFromIDBById(restaurantId).then(function(reviewsIDB) {
         callback(null, reviewsIDB);
-      }
-    });
+      });
+    } else {
+      //we always refresh the reviews from DB while online
+      //because we also want to see what other users have posted in the meantime
+      DBHelper.fetchFromNetwork(`${DBHelper.DATABASE_URL}reviews/?restaurant_id=${restaurantId}`, (error, reviewsNetwork) => {
+        if (error) {
+          console.log(error);
+          //if fetch fron network fails for whatever reason, try IDB
+          DBHelper.getReviewsFromIDBById(restaurantId).then(function(reviewsIDB) {
+            callback(null, reviewsIDB);
+          });
+        } else {
+          DBHelper.addReviewsInIDB(reviewsNetwork);
+          callback(null, reviewsNetwork);
+        }
+      });
+    }
   }
 
   /**
