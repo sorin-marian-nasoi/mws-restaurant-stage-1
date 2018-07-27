@@ -2,6 +2,7 @@ var staticCacheName = 'mws-v1';
 var contentImgsCache = 'mws-images';
 var allCaches = [staticCacheName, contentImgsCache];
 
+//service worker install
 self.addEventListener('install', function (event) {
   event.waitUntil(caches.open(staticCacheName).then(function (cache) {
     return cache.addAll(
@@ -18,6 +19,7 @@ self.addEventListener('install', function (event) {
   }));
 });
 
+//service worker install
 self.addEventListener('activate', function (event) {
   event.waitUntil(caches.keys().then(function (cacheNames) {
     return Promise.all(cacheNames.filter(function (cacheName) {
@@ -28,6 +30,7 @@ self.addEventListener('activate', function (event) {
   }));
 });
 
+//service worker fetch
 self.addEventListener('fetch', function(event) {
   var requestUrl = new URL(event.request.url);
 
@@ -55,6 +58,10 @@ self.addEventListener('fetch', function(event) {
   );
 });
 
+/**
+ * Return the phote either from image cache(if available) or from network
+ * @param {*} request the request
+ */
 function servePhoto(request) {
   var storageUrl = request.url;
 
@@ -70,6 +77,10 @@ function servePhoto(request) {
   });
 }
 
+/**
+ * Serve the map either from the cache (if available) or from network
+ * @param {*} request the request
+ */
 function serveMap(request) {
   var storageUrl = request.url;
 
